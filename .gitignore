@@ -1,0 +1,26 @@
+# Dependencies and local package cache
+node_modules/
+.pnpm-store/
+
+# Generated output
+dist/
+
+# Vercel local project metadata and environment files
+.vercel/
+.env
+.env.*
+!.env.example
+
+# Logs and operating-system files
+*.log
+.DS_Store
+Thumbs.db
+
+# Original source material retained locally; curated website copies live in public/
+/End Semester Project Report Harini.M 20221059 Final (1).docx
+/Harini.report..docx
+/KP final project report.docx
+/supplementary information kp.docx
+/project report- biocon.docx
+/NeuroNexus_Ideathon_Presentation (1).pdf
+/Harini Madheswaran - Research Portfolio v2 (standalone).html
