@@ -290,7 +290,7 @@ function ReviewerMode({ onClose }) {
           <section><span>Current thesis</span><h3>Mechanistic dissection of WDR62</h3><p>Non-mitotic roles in actin architecture and protrusion dynamics.</p></section>
           <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>Questions followed across molecular, cellular and microbial scales.</p></section>
           <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>Cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
-          <section><span>PhD direction</span><h3>Cell biology and disease mechanisms</h3><p>Seeking mechanistic questions with translational relevance.</p></section>
+          <section><span>PhD direction</span><h3>Cancer progression and disease remodelling</h3><p>Interested in how signalling, cellular architecture and tissue environments are reshaped during disease.</p></section>
         </div>
         <div className="reviewer__actions"><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a></div>
       </article>
@@ -451,7 +451,7 @@ function App() {
           <div className="profile-facts" aria-label="Researcher summary">
             <article><span>Current focus</span><strong>WDR62, actin architecture and cell movement</strong></article>
             <article><span>Research range</span><strong>Cellular · molecular · microbial · computational</strong></article>
-            <article><span>PhD direction</span><strong>Mechanistic cell biology and disease</strong></article>
+            <article><span>PhD direction</span><strong>Cancer progression and disease-associated cellular remodelling</strong></article>
           </div>
           <div className="capability-lab" id="methods">
             <nav aria-label="Research capabilities">
@@ -493,7 +493,7 @@ function App() {
 
         <section className="contact" id="chapter-5">
           <div className="contact__field"><span>?</span><div className="contact__rings"><i /><i /><i /></div><p>The next question is still open.</p></div>
-          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2 data-reveal>Let’s ask what biology reveals next.</h2><p>Harini is interested in doctoral research where mechanistic cell biology, disease questions and translational thinking can inform one another.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
+          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2 data-reveal>Let’s ask what biology reveals next.</h2><p>Harini is interested in doctoral research exploring how signalling, cellular architecture and tissue environments are remodelled during cancer progression and other disease states.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
         </section>
       </main>
       <footer><span>Harini Madheswaran · Research Portfolio</span><span>Biology · Chemistry · 2026</span></footer>
