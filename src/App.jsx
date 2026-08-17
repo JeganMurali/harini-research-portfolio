@@ -133,6 +133,15 @@ const capabilities = [
   },
 ]
 
+const visualInteractions = {
+  split: ['Fragments separated', 'Proximity increasing', 'Signal resolves'],
+  coral: ['Condition space', 'Activity zone shifts', 'Conditional response'],
+  protein: ['Ortholog lens 01 / 05', 'Ortholog lens 03 / 05', 'Ortholog lens 05 / 05'],
+  signals: ['External cue', 'Signal relay', 'Organised response'],
+  chromatogram: ['Baseline', 'Peak region I', 'Peak region II'],
+  concept: ['Starting assumption', 'Mechanism assembled', 'Validation gate'],
+}
+
 function Arrow({ down = false }) {
   return <span aria-hidden="true">{down ? '↓' : '↗'}</span>
 }
@@ -175,20 +184,28 @@ function CellField() {
   return <canvas className="cell-field" ref={ref} aria-hidden="true" />
 }
 
-function MiniVisual({ type }) {
+function MiniVisual({ type, activity }) {
   if (type === 'split') return <div className="mini split-mini"><i /><i /><b /></div>
   if (type === 'coral') return <div className="mini coral-mini">{[1,2,3,4,5,6,7].map(i => <i key={i} />)}<b /></div>
   if (type === 'protein') return <div className="mini protein-mini">{[1,2,3,4,5,6].map(i => <i key={i} />)}</div>
   if (type === 'signals') return <div className="mini signal-mini">{[1,2,3,4].map(i => <i key={i} />)}<b /></div>
-  if (type === 'chromatogram') return <svg className="mini chart-mini" viewBox="0 0 220 100"><path d="M0 88H48C57 88 59 17 67 17s7 71 17 71h45c9 0 11-43 19-43s8 43 18 43h54" /></svg>
+  if (type === 'chromatogram') return <svg className="mini chart-mini" viewBox="0 0 220 100"><path d="M0 88H48C57 88 59 17 67 17s7 71 17 71h45c9 0 11-43 19-43s8 43 18 43h54" /><line x1={20 + activity * 180} x2={20 + activity * 180} y1="8" y2="92" /><circle cx={20 + activity * 180} cy="88" r="3" /></svg>
   return <div className="mini concept-mini"><i /><i /><i /><b /></div>
 }
 
 function ProjectVisual({ project, large = false }) {
+  const [activity, setActivity] = useState(.5)
+  const move = (event) => {
+    const rect = event.currentTarget.getBoundingClientRect()
+    setActivity(Math.max(0, Math.min(1, (event.clientX - rect.left) / rect.width)))
+  }
+  const stage = activity < .34 ? 0 : activity < .67 ? 1 : 2
+  const interaction = visualInteractions[project.visual] || visualInteractions.concept
   return (
-    <div className={`interactive-visual interactive-visual--${project.visual} ${large ? 'is-large' : ''}`} data-cursor="interact">
-      <MiniVisual type={project.visual} />
+    <div className={`interactive-visual interactive-visual--${project.visual} ${large ? 'is-large' : ''}`} style={{ '--activity': activity, '--activity-inverse': 1 - activity, '--activity-shift': `${activity * 42}px`, '--inverse-shift': `${activity * -42}px`, '--activity-scale': .72 + activity * .58, '--activity-percent': `${activity * 100}%`, '--activity-angle': `${(activity - .5) * 22}deg`, '--lens-x': `${activity * 100}%` }} onPointerMove={move} onPointerLeave={() => setActivity(.5)}>
+      <MiniVisual type={project.visual} activity={activity} />
       <div className="visual-grid" />
+      <div className="visual-instrument" aria-hidden="true"><span>Conceptual interaction</span><b>{interaction[stage]}</b><i><em /></i></div>
       <span>{project.world} / {project.category}</span>
       <strong>{project.short}</strong>
     </div>
@@ -285,7 +302,7 @@ function CurrentChapter({ step, onStep }) {
   return <>
     <section className="prologue section-pad" id="current-question" data-chapter>
       <div className="chapter-label"><span>Current chapter</span><b>04</b></div>
-      <div><p className="eyebrow">Where the journey has led</p><h2>What tells a cell <em>where to move?</em></h2><p className="lead">The experiences before this thesis built Harini’s experimental range. Her current work brings that range into one mechanistic question at the leading edge—where actin reorganises, proteins exchange and cell movement begins.</p></div>
+      <div><p className="eyebrow">Where the journey has led</p><h2 data-reveal>What tells a cell <em>where to move?</em></h2><p className="lead">The experiences before this thesis built Harini’s experimental range. Her current work brings that range into one mechanistic question at the leading edge—where actin reorganises, proteins exchange and cell movement begins.</p></div>
       <div className="prologue__pulse"><i /><span>experience</span><b>question</b></div>
     </section>
 
@@ -298,7 +315,7 @@ function CurrentChapter({ step, onStep }) {
       <div className="thesis__story">
         <div className="chapter-label"><span>Present investigation</span><b>05</b></div>
         <p className="eyebrow">Mechanistic dissection of WDR62 · ongoing MS thesis</p>
-        <h2>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
+        <h2 data-reveal>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
         <p>WDR62 is classically linked to spindle organisation and primary microcephaly. This thesis tests a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
         <div className="thesis-controls" role="tablist" aria-label="Thesis experimental logic">
           {thesisSteps.map((item, index) => <button key={item.title} onClick={() => onStep(index)} className={step === index ? 'is-active' : ''} role="tab" aria-selected={step === index}><span>0{index + 1}</span><strong>{item.title}</strong><small>{item.verb}</small></button>)}
@@ -333,7 +350,9 @@ function App() {
       gsap.to('.hero__art-base', { scale: 1.17, yPercent: 4, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: .8 } })
       gsap.to('.hero__art-focus', { scale: 1.25, xPercent: 2.5, yPercent: -2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.1 } })
       gsap.fromTo('.worlds__image', { scale: 1.14 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.research-worlds', start: 'top bottom', end: 'bottom top', scrub: 1 } })
+      gsap.from('.hero__copy > *', { y: 38, opacity: 0, duration: .9, stagger: .09, ease: 'power3.out' })
       gsap.utils.toArray('[data-chapter]').forEach((node) => gsap.from(node, { y: 70, opacity: 0, duration: 1, scrollTrigger: { trigger: node, start: 'top 82%' } }))
+      gsap.utils.toArray('[data-reveal]').forEach((node) => gsap.fromTo(node, { clipPath: 'inset(0 0 100% 0)', y: 35 }, { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 1.05, ease: 'power3.out', scrollTrigger: { trigger: node, start: 'top 84%' } }))
     }, document.body)
     return () => context.revert()
   }, [])
@@ -411,7 +430,7 @@ function App() {
             <div className="chapter-label"><span>Researcher profile</span><b>01</b></div>
             <div>
               <p className="eyebrow">Who I am · What I bring</p>
-              <h2>I move between biological scales, while keeping the question <em>experimentally grounded.</em></h2>
+              <h2 data-reveal>I move between biological scales, while keeping the question <em>experimentally grounded.</em></h2>
               <p className="profile-lead">I am a BS–MS student at IISER Tirupati, majoring in Biology with a Chemistry minor. My work spans mammalian cells, molecular signalling, microbial systems and computational biology. Across each setting, I look for the experiment that can turn an observation into a mechanism.</p>
             </div>
           </div>
@@ -436,21 +455,23 @@ function App() {
 
         <section className="research-worlds" id="journey">
           <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing Harini’s movement through academic, industrial and marine research environments" /><div className="worlds__shade" /></div>
-          <div className="worlds__intro"><p className="eyebrow">A researcher in formation · four environments</p><h2>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
+          <div className="worlds__intro"><p className="eyebrow">A researcher in formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
           <div className="world-chapters">
-            <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
-            <article data-chapter><span>02 · Biocon, Bengaluru · Industry</span><h3>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
-            <article data-chapter><span>03 · CSIR-NIO, Goa · Research</span><h3>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Marine microbiology · Screening · Extraction · Optimisation</small></article>
-            <article data-chapter><span>04 · IISER Tirupati · Return</span><h3>A broader toolkit met a sharper question.</h3><p>I returned to cell biology ready to connect molecular tools, imaging and dynamic measurements in the mechanistic study of WDR62 and cell movement.</p><small>Current MS thesis · WDR62 · Actin architecture</small></article>
+            <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3 data-reveal>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
+            <article data-chapter><span>02 · Biocon, Bengaluru · Industry</span><h3 data-reveal>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
+            <article data-chapter><span>03 · CSIR-NIO, Goa · Research</span><h3 data-reveal>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Marine microbiology · Screening · Extraction · Optimisation</small></article>
+            <article data-chapter><span>04 · IISER Tirupati · Return</span><h3 data-reveal>A broader toolkit met a sharper question.</h3><p>I returned to cell biology ready to connect molecular tools, imaging and dynamic measurements in the mechanistic study of WDR62 and cell movement.</p><small>Current MS thesis · WDR62 · Actin architecture</small></article>
           </div>
         </section>
 
+        <div className="research-verbs" aria-hidden="true"><div><span>observe</span><i>·</i><span>build</span><i>·</i><span>perturb</span><i>·</i><span>measure</span><i>·</i><span>compare</span><i>·</i><span>interpret</span><i>·</i><span>observe</span><i>·</i><span>build</span><i>·</i><span>perturb</span><i>·</i><span>measure</span></div></div>
+
         <section className="projects section-pad" id="projects">
-          <div className="projects__heading" data-chapter><div className="chapter-label"><span>Interactive research archive</span><b>03</b></div><div><p className="eyebrow">Six research encounters</p><h2>Open a question. <em>Enter its evidence.</em></h2></div><p>Each dossier fits the project into four navigable chapters. Select a project—its story opens immediately in place.</p></div>
+          <div className="projects__heading" data-chapter><div className="chapter-label"><span>Interactive research archive</span><b>03</b></div><div><p className="eyebrow">Six research encounters</p><h2 data-reveal>Open a question. <em>Enter its evidence.</em></h2></div><p>Each dossier fits the project into four navigable chapters. Select a project—its story opens immediately in place.</p></div>
           <div className="project-filters">{filters.map(item => <button key={item} onClick={() => setFilter(item)} className={filter === item ? 'is-active' : ''}>{item}</button>)}</div>
           <div className="project-constellation">
             <svg className="constellation-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path d="M160 150C330 40 410 225 505 290S715 520 865 420"/><path d="M140 455C285 555 370 350 505 290S730 55 860 155"/></svg>
-            {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)} data-cursor="open dossier"><ProjectVisual project={project} /><div className="project-node__copy"><span>{project.number} · {project.category}</span><h3>{project.title}</h3><p>{project.question}</p><b>Open dossier <Arrow /></b></div></button>)}
+            {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)}><ProjectVisual project={project} /><div className="project-node__copy"><div className="project-node__meta"><span>{project.number} · {project.category}</span><i>{project.status}</i></div><h3>{project.title}</h3><p>{project.question}</p><div className="project-node__methods">{project.methods.slice(0, 2).map(method => <span key={method}>{method}</span>)}</div><b>Open research dossier <Arrow /></b></div></button>)}
           </div>
         </section>
 
@@ -458,7 +479,7 @@ function App() {
 
         <section className="contact" id="chapter-5">
           <div className="contact__field"><span>?</span><div className="contact__rings"><i /><i /><i /></div><p>The next question is still open.</p></div>
-          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2>Let’s ask what biology reveals next.</h2><p>Harini is interested in doctoral research where mechanistic cell biology, disease questions and translational thinking can inform one another.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
+          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2 data-reveal>Let’s ask what biology reveals next.</h2><p>Harini is interested in doctoral research where mechanistic cell biology, disease questions and translational thinking can inform one another.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
         </section>
       </main>
       <footer><span>Harini Madheswaran · Research Portfolio</span><span>Biology · Chemistry · 2026</span></footer>
