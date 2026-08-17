@@ -281,6 +281,35 @@ function ReviewerMode({ onClose }) {
   )
 }
 
+function CurrentChapter({ step, onStep }) {
+  return <>
+    <section className="prologue section-pad" id="current-question" data-chapter>
+      <div className="chapter-label"><span>Current chapter</span><b>04</b></div>
+      <div><p className="eyebrow">Where the journey has led</p><h2>What tells a cell <em>where to move?</em></h2><p className="lead">The experiences before this thesis built Harini’s experimental range. Her current work brings that range into one mechanistic question at the leading edge—where actin reorganises, proteins exchange and cell movement begins.</p></div>
+      <div className="prologue__pulse"><i /><span>experience</span><b>question</b></div>
+    </section>
+
+    <section className="thesis" id="thesis">
+      <div className="thesis__scene" data-cursor="drag 3D model">
+        <Suspense fallback={<div className="scene-loading"><i /><span>Resolving cell architecture</span></div>}><WdrScene step={step} /></Suspense>
+        <div className="scene-hud scene-hud--top"><span>Live conceptual model</span><b>WDR62 / leading edge</b></div>
+        <div className="scene-hud scene-hud--bottom"><span>{thesisSteps[step].cue}</span><b>Drag to rotate</b></div>
+      </div>
+      <div className="thesis__story">
+        <div className="chapter-label"><span>Present investigation</span><b>05</b></div>
+        <p className="eyebrow">Mechanistic dissection of WDR62 · ongoing MS thesis</p>
+        <h2>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
+        <p>WDR62 is classically linked to spindle organisation and primary microcephaly. This thesis tests a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
+        <div className="thesis-controls" role="tablist" aria-label="Thesis experimental logic">
+          {thesisSteps.map((item, index) => <button key={item.title} onClick={() => onStep(index)} className={step === index ? 'is-active' : ''} role="tab" aria-selected={step === index}><span>0{index + 1}</span><strong>{item.title}</strong><small>{item.verb}</small></button>)}
+        </div>
+        <div className="thesis-readout" key={step}><span>0{step + 1} / 04</span><p>{thesisSteps[step].copy}</p></div>
+        <div className="supervisor"><span>Supervisor</span>Dr. Pavithra Lakshminarasimhan Chavali · IISER Tirupati</div>
+      </div>
+    </section>
+  </>
+}
+
 function App() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [thesisStep, setThesisStep] = useState(0)
@@ -290,6 +319,7 @@ function App() {
   const [progress, setProgress] = useState(0)
   const [audioOn, setAudioOn] = useState(false)
   const [activeCapability, setActiveCapability] = useState(0)
+  const [headerCompact, setHeaderCompact] = useState(false)
   const audio = useRef(null)
   const hero = useRef(null)
 
@@ -312,9 +342,16 @@ function App() {
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - innerHeight
       setProgress(max ? scrollY / max : 0)
+      setHeaderCompact(scrollY > 120)
     }
     onScroll(); addEventListener('scroll', onScroll, { passive: true })
     return () => removeEventListener('scroll', onScroll)
+  }, [])
+
+  useEffect(() => {
+    const closeMenu = (event) => event.key === 'Escape' && setMenuOpen(false)
+    addEventListener('keydown', closeMenu)
+    return () => removeEventListener('keydown', closeMenu)
   }, [])
 
   const moveHero = (event) => {
@@ -339,17 +376,17 @@ function App() {
     <div className="site-shell">
       <div className="scroll-progress" style={{ transform: `scaleX(${progress})` }} />
       <aside className="signal-nav" aria-label="Story progress"><span style={{ height: `${progress * 100}%` }} />{[
-        ['Harini', '#chapter-0'], ['Profile', '#about'], ['Question', '#chapter-2'], ['Research', '#chapter-3'], ['Journey', '#trajectory'], ['Next', '#chapter-5'],
+        ['Harini', '#chapter-0'], ['Profile', '#about'], ['Journey', '#journey'], ['Evidence', '#projects'], ['Current', '#current-question'], ['Next', '#chapter-5'],
       ].map(([item, href]) => <a key={item} href={href} aria-label={item}><i />{item}</a>)}</aside>
 
-      <header className="site-header">
+      <header className={`site-header${headerCompact ? ' is-compact' : ''}${menuOpen ? ' has-menu' : ''}`}>
         <a className="brand" href="#chapter-0"><span className="brand__mark">HM</span><span className="brand__copy"><b>Harini Madheswaran</b><small>Research portfolio · IISER Tirupati</small></span></a>
-        <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
-          <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#trajectory" onClick={() => setMenuOpen(false)}>Journey</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
+        <nav id="primary-navigation" className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
+          <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#journey" onClick={() => setMenuOpen(false)}>Journey</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#current-question" onClick={() => setMenuOpen(false)}>Current thesis</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
           <button className="reviewer-trigger" onClick={() => setReviewerOpen(true)}><span>For PhD reviewers</span><Arrow /></button>
           <button className="sound-trigger" onClick={toggleAudio} aria-pressed={audioOn} aria-label={`Ambient audio ${audioOn ? 'on' : 'off'}`} title="Toggle ambient audio"><i /> <span>Sound {audioOn ? 'on' : 'off'}</span></button>
         </nav>
-        <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation"><span /><span /></button>
+        <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation" aria-expanded={menuOpen} aria-controls="primary-navigation"><span /><span /><b>Menu</b></button>
       </header>
 
       <main>
@@ -364,10 +401,9 @@ function App() {
             <h2 className="hero__role">Experimental biologist investigating how cells organise, communicate and adapt.</h2>
             <p>I combine cell biology, molecular experimentation, microbiology and computational analysis to turn mechanistic questions into testable experiments.</p>
             <blockquote>Inside every cell, structure becomes decision.</blockquote>
-            <div className="hero__actions"><a href="#about" className="button button--light">Meet the researcher <Arrow down /></a><a href="#projects" className="button button--ghost">Explore research <Arrow /></a></div>
+            <div className="hero__actions"><a href="#about" className="button button--light">Meet the researcher <Arrow down /></a><a href="#journey" className="button button--ghost">Follow the journey <Arrow /></a></div>
           </div>
           <div className="hero__readout"><span>IISER Tirupati · Cell biology</span><span>Wet lab · Computation · Scientific synthesis</span><button onClick={() => setReviewerOpen(true)}>90-second reviewer view <Arrow /></button></div>
-          <div className="hero__mitochondria"><span>ATP</span><i /><i /><i /></div>
         </section>
 
         <section className="researcher-profile section-pad" id="about" data-chapter>
@@ -398,43 +434,19 @@ function App() {
           </div>
         </section>
 
-        <section className="prologue section-pad" id="chapter-2" data-chapter>
-          <div className="chapter-label"><span>Prologue</span><b>02</b></div>
-          <div><p className="eyebrow">The first question</p><h2>What tells a cell <em>where to move?</em></h2><p className="lead">A migrating cell must turn chemical information into physical direction. Harini’s current thesis enters that decision at the leading edge—where actin reorganises, proteins exchange and a scaffold known for mitosis may have another role.</p></div>
-          <div className="prologue__pulse"><i /><span>signal</span><b>response</b></div>
-        </section>
-
-        <section className="thesis" id="thesis">
-          <div className="thesis__scene" data-cursor="drag 3D model">
-            <Suspense fallback={<div className="scene-loading"><i /><span>Resolving cell architecture</span></div>}><WdrScene step={thesisStep} /></Suspense>
-            <div className="scene-hud scene-hud--top"><span>Live conceptual model</span><b>WDR62 / leading edge</b></div>
-            <div className="scene-hud scene-hud--bottom"><span>{thesisSteps[thesisStep].cue}</span><b>Drag to rotate</b></div>
-          </div>
-          <div className="thesis__story">
-            <div className="chapter-label"><span>Signature investigation</span><b>03</b></div>
-            <p className="eyebrow">Mechanistic dissection of WDR62 · ongoing MS thesis</p>
-            <h2>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
-            <p>WDR62 is classically linked to spindle organisation and primary microcephaly. This thesis tests a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
-            <div className="thesis-controls" role="tablist" aria-label="Thesis experimental logic">
-              {thesisSteps.map((step, index) => <button key={step.title} onClick={() => setThesisStep(index)} className={thesisStep === index ? 'is-active' : ''} role="tab" aria-selected={thesisStep === index}><span>0{index + 1}</span><strong>{step.title}</strong><small>{step.verb}</small></button>)}
-            </div>
-            <div className="thesis-readout" key={thesisStep}><span>0{thesisStep + 1} / 04</span><p>{thesisSteps[thesisStep].copy}</p></div>
-            <div className="supervisor"><span>Supervisor</span>Dr. Pavithra Lakshminarasimhan Chavali · IISER Tirupati</div>
-          </div>
-        </section>
-
-        <section className="research-worlds" id="chapter-3">
-          <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="Decorative scientific panorama connecting molecular signalling, membrane-protein structure and coral microbial survival" /><div className="worlds__shade" /></div>
-          <div className="worlds__intro"><p className="eyebrow">One researcher · three biological scales</p><h2>A question changes shape as you move through the system.</h2></div>
+        <section className="research-worlds" id="journey">
+          <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing Harini’s movement through academic, industrial and marine research environments" /><div className="worlds__shade" /></div>
+          <div className="worlds__intro"><p className="eyebrow">A researcher in formation · four environments</p><h2>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
           <div className="world-chapters">
-            <article data-chapter><span>Chapter I · Signals</span><h3>Make proximity visible.</h3><p>Follow molecular relationships inside mammalian cells.</p></article>
-            <article data-chapter><span>Chapter II · Structures</span><h3>Read conservation in form.</h3><p>Move from sequence to topology and predicted structure.</p></article>
-            <article data-chapter><span>Chapter III · Survival</span><h3>Find defence in a community.</h3><p>Screen coral-associated microbes for conditional activity.</p></article>
+            <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
+            <article data-chapter><span>02 · Biocon, Bengaluru · Industry</span><h3>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
+            <article data-chapter><span>03 · CSIR-NIO, Goa · Research</span><h3>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Marine microbiology · Screening · Extraction · Optimisation</small></article>
+            <article data-chapter><span>04 · IISER Tirupati · Return</span><h3>A broader toolkit met a sharper question.</h3><p>I returned to cell biology ready to connect molecular tools, imaging and dynamic measurements in the mechanistic study of WDR62 and cell movement.</p><small>Current MS thesis · WDR62 · Actin architecture</small></article>
           </div>
         </section>
 
         <section className="projects section-pad" id="projects">
-          <div className="projects__heading" data-chapter><div className="chapter-label"><span>Interactive research archive</span><b>04</b></div><div><p className="eyebrow">Six research encounters</p><h2>Open a question. <em>Enter its evidence.</em></h2></div><p>Each dossier fits the project into four navigable chapters. Select a project—its story opens immediately in place.</p></div>
+          <div className="projects__heading" data-chapter><div className="chapter-label"><span>Interactive research archive</span><b>03</b></div><div><p className="eyebrow">Six research encounters</p><h2>Open a question. <em>Enter its evidence.</em></h2></div><p>Each dossier fits the project into four navigable chapters. Select a project—its story opens immediately in place.</p></div>
           <div className="project-filters">{filters.map(item => <button key={item} onClick={() => setFilter(item)} className={filter === item ? 'is-active' : ''}>{item}</button>)}</div>
           <div className="project-constellation">
             <svg className="constellation-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path d="M160 150C330 40 410 225 505 290S715 520 865 420"/><path d="M140 455C285 555 370 350 505 290S730 55 860 155"/></svg>
@@ -442,16 +454,11 @@ function App() {
           </div>
         </section>
 
-        <section className="trajectory section-pad" id="trajectory" data-chapter>
-          <div className="trajectory__heading"><div className="chapter-label"><span>Living trajectory</span><b>05</b></div><div><p className="eyebrow">A path across disciplines</p><h2>Each experience changed the next question.</h2></div></div>
-          <div className="living-line"><svg viewBox="0 0 1200 360" preserveAspectRatio="none" aria-hidden="true"><path d="M20 310C160 315 168 205 320 220S480 315 610 190 800 62 945 145 1080 120 1180 40"/></svg>{[
-            ['Foundation', 'IISER Tirupati', 'BS–MS training · Biology major, Chemistry minor'], ['Industry', 'Biocon, Bengaluru', 'API R&D · analytical workflows · reproducibility'], ['Research', 'CSIR-NIO, Goa', 'Marine microbiology · antimicrobial screening'], ['Now', 'WDR62 thesis · IISER Tirupati', 'Actin architecture and cell movement'], ['Next', 'PhD research', 'Cell biology, disease mechanisms and translation'],
-          ].map(([year, place, copy], i) => <article key={place} style={{ '--i': i }}><i /><span>{year}</span><h3>{place}</h3><p>{copy}</p></article>)}</div>
-        </section>
+        <CurrentChapter step={thesisStep} onStep={setThesisStep} />
 
         <section className="contact" id="chapter-5">
           <div className="contact__field"><span>?</span><div className="contact__rings"><i /><i /><i /></div><p>The next question is still open.</p></div>
-          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2>Let’s follow what the cell reveals next.</h2><p>Harini is interested in doctoral research at the intersection of cell biology, disease mechanisms and translational science.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
+          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2>Let’s ask what biology reveals next.</h2><p>Harini is interested in doctoral research where mechanistic cell biology, disease questions and translational thinking can inform one another.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
         </section>
       </main>
       <footer><span>Harini Madheswaran · Research Portfolio</span><span>Biology · Chemistry · 2026</span></footer>
