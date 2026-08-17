@@ -375,7 +375,7 @@ function App() {
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - innerHeight
       setProgress(max ? scrollY / max : 0)
-      setHeaderCompact(scrollY > 120)
+      setHeaderCompact(current => current ? scrollY > 72 : scrollY > 140)
     }
     onScroll(); addEventListener('scroll', onScroll, { passive: true })
     return () => removeEventListener('scroll', onScroll)
