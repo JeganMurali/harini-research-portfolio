@@ -205,7 +205,7 @@ function ProjectVisual({ project, large = false }) {
     <div className={`interactive-visual interactive-visual--${project.visual} ${large ? 'is-large' : ''}`} style={{ '--activity': activity, '--activity-inverse': 1 - activity, '--activity-shift': `${activity * 42}px`, '--inverse-shift': `${activity * -42}px`, '--activity-scale': .72 + activity * .58, '--activity-percent': `${activity * 100}%`, '--activity-angle': `${(activity - .5) * 22}deg`, '--lens-x': `${activity * 100}%` }} onPointerMove={move} onPointerLeave={() => setActivity(.5)}>
       <MiniVisual type={project.visual} activity={activity} />
       <div className="visual-grid" />
-      <div className="visual-instrument" aria-hidden="true"><span>Conceptual interaction</span><b>{interaction[stage]}</b><i><em /></i></div>
+      <div className="visual-instrument" aria-hidden="true"><span>Interactive model</span><b>{interaction[stage]}</b><i><em /></i></div>
       <span>{project.world} / {project.category}</span>
       <strong>{project.short}</strong>
     </div>
@@ -244,14 +244,14 @@ function Dossier({ project, onClose }) {
     <div className="dossier-backdrop" role="presentation" onMouseDown={onClose}>
       <article className="dossier" role="dialog" aria-modal="true" aria-label={`${project.title} research dossier`} onMouseDown={(e) => e.stopPropagation()}>
         <header className="dossier__header">
-          <div><span>{project.number}</span><p>Research dossier</p></div>
+          <div><span>{project.number}</span><p>Research dossier<small>{project.status}</small></p></div>
           <nav aria-label="Dossier chapters">
             {chapters.map((item, index) => <button key={item} onClick={() => setChapter(item)} className={chapter === item ? 'is-active' : ''}><small>0{index + 1}</small>{item}</button>)}
           </nav>
           <button className="dossier__close" onClick={onClose} aria-label="Close research dossier">Close <b>×</b></button>
         </header>
         <div className="dossier__body">
-          <div className="dossier__visual"><ProjectVisual project={project} large /><span className="dossier__status">{project.status}</span></div>
+          <div className="dossier__visual"><ProjectVisual project={project} large /></div>
           <div className="dossier__panel" key={chapter}>
             {chapter === 'story' && <>
               <p className="eyebrow">{project.short}</p><h2>{project.title}</h2>
