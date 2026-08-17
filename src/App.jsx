@@ -175,23 +175,6 @@ function CellField() {
   return <canvas className="cell-field" ref={ref} aria-hidden="true" />
 }
 
-function ResearchCursor() {
-  const dot = useRef(null)
-  const label = useRef(null)
-  useEffect(() => {
-    const move = (event) => {
-      if (!dot.current) return
-      dot.current.style.transform = `translate3d(${event.clientX}px,${event.clientY}px,0)`
-      const cue = event.target.closest?.('[data-cursor]')?.dataset.cursor || ''
-      dot.current.classList.toggle('is-reading', Boolean(cue))
-      label.current.textContent = cue
-    }
-    addEventListener('pointermove', move, { passive: true })
-    return () => removeEventListener('pointermove', move)
-  }, [])
-  return <div className="research-cursor" ref={dot} aria-hidden="true"><span ref={label} /></div>
-}
-
 function MiniVisual({ type }) {
   if (type === 'split') return <div className="mini split-mini"><i /><i /><b /></div>
   if (type === 'coral') return <div className="mini coral-mini">{[1,2,3,4,5,6,7].map(i => <i key={i} />)}<b /></div>
@@ -355,17 +338,16 @@ function App() {
   return (
     <div className="site-shell">
       <div className="scroll-progress" style={{ transform: `scaleX(${progress})` }} />
-      <ResearchCursor />
       <aside className="signal-nav" aria-label="Story progress"><span style={{ height: `${progress * 100}%` }} />{[
         ['Harini', '#chapter-0'], ['Profile', '#about'], ['Question', '#chapter-2'], ['Research', '#chapter-3'], ['Journey', '#trajectory'], ['Next', '#chapter-5'],
       ].map(([item, href]) => <a key={item} href={href} aria-label={item}><i />{item}</a>)}</aside>
 
       <header className="site-header">
-        <a className="brand" href="#chapter-0"><span className="brand__mark">HM</span><span>Harini Madheswaran</span></a>
+        <a className="brand" href="#chapter-0"><span className="brand__mark">HM</span><span className="brand__copy"><b>Harini Madheswaran</b><small>Research portfolio · IISER Tirupati</small></span></a>
         <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
           <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#trajectory" onClick={() => setMenuOpen(false)}>Journey</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
-          <button className="reviewer-trigger" onClick={() => setReviewerOpen(true)}>Reviewer mode</button>
-          <button className="sound-trigger" onClick={toggleAudio} aria-pressed={audioOn}><i /> Audio {audioOn ? 'on' : 'off'}</button>
+          <button className="reviewer-trigger" onClick={() => setReviewerOpen(true)}><span>For PhD reviewers</span><Arrow /></button>
+          <button className="sound-trigger" onClick={toggleAudio} aria-pressed={audioOn} aria-label={`Ambient audio ${audioOn ? 'on' : 'off'}`} title="Toggle ambient audio"><i /> <span>Sound {audioOn ? 'on' : 'off'}</span></button>
         </nav>
         <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label="Toggle navigation"><span /><span /></button>
       </header>
