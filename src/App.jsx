@@ -102,6 +102,37 @@ const thesisSteps = [
 
 const filters = ['All', 'Wet lab', 'Computational', 'Literature', 'Industry', 'Presentation']
 
+const capabilities = [
+  {
+    id: 'cell', number: '01', title: 'Cell biology & imaging',
+    statement: 'I study cellular organisation as a dynamic process—not only as a fixed image.',
+    detail: 'Mammalian cell culture, confocal microscopy, phalloidin staining and FRAP support questions about localisation, actin architecture and molecular turnover.',
+    evidence: 'WDR62 MS thesis · U251 and HeLa cells',
+    methods: ['Mammalian cell culture', 'Confocal microscopy', 'FRAP', 'Perturbation'],
+  },
+  {
+    id: 'molecular', number: '02', title: 'Molecular experimentation',
+    statement: 'I build experimental systems that make otherwise invisible molecular relationships measurable.',
+    detail: 'Construct design, cloning, validation and fluorescence controls connect molecular logic to a testable cellular readout.',
+    evidence: 'WDR62–PDPK1–AKT1 split-GFP platform',
+    methods: ['PCR', 'Cloning', 'Transfection', 'Fluorescence controls'],
+  },
+  {
+    id: 'microbial', number: '03', title: 'Microbiology & chemistry',
+    statement: 'I follow biological activity from a microbial community into an experimental assay.',
+    detail: 'Culture, extraction, antimicrobial screening and chromatographic preparation reveal how conditions alter biological activity.',
+    evidence: 'CSIR-NIO coral microbiome · Biocon API R&D',
+    methods: ['Aseptic culture', 'Extraction', 'Disc diffusion', 'TLC / HPLC'],
+  },
+  {
+    id: 'computational', number: '04', title: 'Computational reasoning',
+    statement: 'I use sequence, topology and structure as converging lines of evidence.',
+    detail: 'Comparative analysis connects evolutionary conservation with predicted molecular form and experimentally useful hypotheses.',
+    evidence: 'TMEM135 comparative biology project',
+    methods: ['Alignment', 'Phylogeny', 'Topology', 'Structure prediction'],
+  },
+]
+
 function Arrow({ down = false }) {
   return <span aria-hidden="true">{down ? '↓' : '↗'}</span>
 }
@@ -275,6 +306,7 @@ function App() {
   const [reviewerOpen, setReviewerOpen] = useState(false)
   const [progress, setProgress] = useState(0)
   const [audioOn, setAudioOn] = useState(false)
+  const [activeCapability, setActiveCapability] = useState(0)
   const audio = useRef(null)
   const hero = useRef(null)
 
@@ -324,12 +356,14 @@ function App() {
     <div className="site-shell">
       <div className="scroll-progress" style={{ transform: `scaleX(${progress})` }} />
       <ResearchCursor />
-      <aside className="signal-nav" aria-label="Story progress"><span style={{ height: `${progress * 100}%` }} />{['Cell', 'Question', 'Signals', 'Structures', 'Survival', 'Next'].map((item, i) => <a key={item} href={`#chapter-${i}`} aria-label={item}><i />{item}</a>)}</aside>
+      <aside className="signal-nav" aria-label="Story progress"><span style={{ height: `${progress * 100}%` }} />{[
+        ['Harini', '#chapter-0'], ['Profile', '#about'], ['Question', '#chapter-2'], ['Research', '#chapter-3'], ['Journey', '#trajectory'], ['Next', '#chapter-5'],
+      ].map(([item, href]) => <a key={item} href={href} aria-label={item}><i />{item}</a>)}</aside>
 
       <header className="site-header">
         <a className="brand" href="#chapter-0"><span className="brand__mark">HM</span><span>Harini Madheswaran</span></a>
         <nav className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
-          <a href="#thesis" onClick={() => setMenuOpen(false)}>Thesis</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#trajectory" onClick={() => setMenuOpen(false)}>Trajectory</a>
+          <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#trajectory" onClick={() => setMenuOpen(false)}>Journey</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
           <button className="reviewer-trigger" onClick={() => setReviewerOpen(true)}>Reviewer mode</button>
           <button className="sound-trigger" onClick={toggleAudio} aria-pressed={audioOn}><i /> Audio {audioOn ? 'on' : 'off'}</button>
         </nav>
@@ -343,17 +377,47 @@ function App() {
           <CellField />
           <div className="hero__signals" aria-hidden="true">{[1,2,3,4].map(i => <i key={i} />)}</div>
           <div className="hero__veil" /><div className="hero__copy">
-            <p className="eyebrow">Biology major · Chemistry minor · IISER Tirupati</p>
-            <h1>Inside every cell, <em>structure becomes decision.</em></h1>
-            <p>I’m Harini—following the signals, scaffolds and survival strategies that shape cellular behaviour and disease.</p>
-            <div className="hero__actions"><a href="#chapter-1" className="button button--light">Enter the cell <Arrow down /></a><button className="button button--ghost" onClick={() => setReviewerOpen(true)}>90-second reviewer view <Arrow /></button></div>
+            <p className="eyebrow">BS–MS researcher · Biology major · Chemistry minor</p>
+            <h1>Harini <em>Madheswaran.</em></h1>
+            <h2 className="hero__role">Experimental biologist investigating how cells organise, communicate and adapt.</h2>
+            <p>I combine cell biology, molecular experimentation, microbiology and computational analysis to turn mechanistic questions into testable experiments.</p>
+            <blockquote>Inside every cell, structure becomes decision.</blockquote>
+            <div className="hero__actions"><a href="#about" className="button button--light">Meet the researcher <Arrow down /></a><a href="#projects" className="button button--ghost">Explore research <Arrow /></a></div>
           </div>
-          <div className="hero__readout"><span>Living cell / conceptual artwork</span><span>Pointer parallax active</span><span>Scroll to change scale</span></div>
+          <div className="hero__readout"><span>IISER Tirupati · Cell biology</span><span>Wet lab · Computation · Scientific synthesis</span><button onClick={() => setReviewerOpen(true)}>90-second reviewer view <Arrow /></button></div>
           <div className="hero__mitochondria"><span>ATP</span><i /><i /><i /></div>
         </section>
 
-        <section className="prologue section-pad" id="chapter-1" data-chapter>
-          <div className="chapter-label"><span>Prologue</span><b>01</b></div>
+        <section className="researcher-profile section-pad" id="about" data-chapter>
+          <div className="profile-intro">
+            <div className="chapter-label"><span>Researcher profile</span><b>01</b></div>
+            <div>
+              <p className="eyebrow">Who I am · What I bring</p>
+              <h2>I move between biological scales, while keeping the question <em>experimentally grounded.</em></h2>
+              <p className="profile-lead">I am a BS–MS student at IISER Tirupati, majoring in Biology with a Chemistry minor. My work spans mammalian cells, molecular signalling, microbial systems and computational biology. Across each setting, I look for the experiment that can turn an observation into a mechanism.</p>
+            </div>
+          </div>
+          <div className="profile-facts" aria-label="Researcher summary">
+            <article><span>Current focus</span><strong>WDR62, actin architecture and cell movement</strong></article>
+            <article><span>Research range</span><strong>Cellular · molecular · microbial · computational</strong></article>
+            <article><span>PhD direction</span><strong>Mechanistic cell biology and disease</strong></article>
+          </div>
+          <div className="capability-lab" id="methods">
+            <nav aria-label="Research capabilities">
+              {capabilities.map((capability, index) => <button key={capability.id} className={activeCapability === index ? 'is-active' : ''} onClick={() => setActiveCapability(index)}><span>{capability.number}</span><strong>{capability.title}</strong><i aria-hidden="true">↗</i></button>)}
+            </nav>
+            <article className="capability-readout" key={capabilities[activeCapability].id}>
+              <p className="eyebrow">What I can do</p>
+              <h3>{capabilities[activeCapability].statement}</h3>
+              <p>{capabilities[activeCapability].detail}</p>
+              <div className="capability-evidence"><span>Demonstrated in</span><strong>{capabilities[activeCapability].evidence}</strong></div>
+              <div className="capability-tags">{capabilities[activeCapability].methods.map(method => <span key={method}>{method}</span>)}</div>
+            </article>
+          </div>
+        </section>
+
+        <section className="prologue section-pad" id="chapter-2" data-chapter>
+          <div className="chapter-label"><span>Prologue</span><b>02</b></div>
           <div><p className="eyebrow">The first question</p><h2>What tells a cell <em>where to move?</em></h2><p className="lead">A migrating cell must turn chemical information into physical direction. Harini’s current thesis enters that decision at the leading edge—where actin reorganises, proteins exchange and a scaffold known for mitosis may have another role.</p></div>
           <div className="prologue__pulse"><i /><span>signal</span><b>response</b></div>
         </section>
@@ -365,7 +429,7 @@ function App() {
             <div className="scene-hud scene-hud--bottom"><span>{thesisSteps[thesisStep].cue}</span><b>Drag to rotate</b></div>
           </div>
           <div className="thesis__story">
-            <div className="chapter-label"><span>Signature investigation</span><b>02</b></div>
+            <div className="chapter-label"><span>Signature investigation</span><b>03</b></div>
             <p className="eyebrow">Mechanistic dissection of WDR62 · ongoing MS thesis</p>
             <h2>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
             <p>WDR62 is classically linked to spindle organisation and primary microcephaly. This thesis tests a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
@@ -377,18 +441,18 @@ function App() {
           </div>
         </section>
 
-        <section className="research-worlds" id="chapter-2">
+        <section className="research-worlds" id="chapter-3">
           <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="Decorative scientific panorama connecting molecular signalling, membrane-protein structure and coral microbial survival" /><div className="worlds__shade" /></div>
           <div className="worlds__intro"><p className="eyebrow">One researcher · three biological scales</p><h2>A question changes shape as you move through the system.</h2></div>
           <div className="world-chapters">
             <article data-chapter><span>Chapter I · Signals</span><h3>Make proximity visible.</h3><p>Follow molecular relationships inside mammalian cells.</p></article>
-            <article data-chapter id="chapter-3"><span>Chapter II · Structures</span><h3>Read conservation in form.</h3><p>Move from sequence to topology and predicted structure.</p></article>
-            <article data-chapter id="chapter-4"><span>Chapter III · Survival</span><h3>Find defence in a community.</h3><p>Screen coral-associated microbes for conditional activity.</p></article>
+            <article data-chapter><span>Chapter II · Structures</span><h3>Read conservation in form.</h3><p>Move from sequence to topology and predicted structure.</p></article>
+            <article data-chapter><span>Chapter III · Survival</span><h3>Find defence in a community.</h3><p>Screen coral-associated microbes for conditional activity.</p></article>
           </div>
         </section>
 
         <section className="projects section-pad" id="projects">
-          <div className="projects__heading" data-chapter><div className="chapter-label"><span>Interactive research archive</span><b>03</b></div><div><p className="eyebrow">Six research encounters</p><h2>Open a question. <em>Enter its evidence.</em></h2></div><p>Each dossier fits the project into four navigable chapters. Select a project—its story opens immediately in place.</p></div>
+          <div className="projects__heading" data-chapter><div className="chapter-label"><span>Interactive research archive</span><b>04</b></div><div><p className="eyebrow">Six research encounters</p><h2>Open a question. <em>Enter its evidence.</em></h2></div><p>Each dossier fits the project into four navigable chapters. Select a project—its story opens immediately in place.</p></div>
           <div className="project-filters">{filters.map(item => <button key={item} onClick={() => setFilter(item)} className={filter === item ? 'is-active' : ''}>{item}</button>)}</div>
           <div className="project-constellation">
             <svg className="constellation-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path d="M160 150C330 40 410 225 505 290S715 520 865 420"/><path d="M140 455C285 555 370 350 505 290S730 55 860 155"/></svg>
@@ -396,21 +460,10 @@ function App() {
           </div>
         </section>
 
-        <section className="skills section-pad" data-chapter>
-          <div className="chapter-label"><span>Evidence-linked toolkit</span><b>04</b></div>
-          <div className="skills__intro"><p className="eyebrow">Technique leaves a trace</p><h2>Skills connected to the questions where they mattered.</h2></div>
-          <div className="skill-orbit">
-            <div className="skill-orbit__core"><span>Harini</span><b>build · see · compare</b></div>
-            {[
-              ['Confocal & FRAP', 'WDR62 thesis'], ['Molecular cloning', 'Split-GFP'], ['Microbial screening', 'CSIR-NIO'], ['Bioinformatics', 'TMEM135'], ['TLC & HPLC', 'Biocon'], ['Scientific synthesis', 'Signalling review'],
-            ].map(([skill, evidence], i) => <article key={skill} style={{ '--i': i }} data-cursor={evidence}><span>0{i + 1}</span><h3>{skill}</h3><p>{evidence}</p></article>)}
-          </div>
-        </section>
-
-        <section className="trajectory section-pad" id="trajectory">
+        <section className="trajectory section-pad" id="trajectory" data-chapter>
           <div className="trajectory__heading"><div className="chapter-label"><span>Living trajectory</span><b>05</b></div><div><p className="eyebrow">A path across disciplines</p><h2>Each experience changed the next question.</h2></div></div>
           <div className="living-line"><svg viewBox="0 0 1200 360" preserveAspectRatio="none" aria-hidden="true"><path d="M20 310C160 315 168 205 320 220S480 315 610 190 800 62 945 145 1080 120 1180 40"/></svg>{[
-            ['2022', 'IISER Tirupati', 'BS-MS begins · Biology major, Chemistry minor'], ['2025', 'CSIR-NIO, Goa', 'Marine microbiology research internship'], ['Training', 'Biocon, Bengaluru', 'API R&D and analytical workflows'], ['Now', 'WDR62 thesis', 'Actin architecture and cell movement'], ['Next', 'PhD research', 'Cell biology, disease mechanisms and translation'],
+            ['Foundation', 'IISER Tirupati', 'BS–MS training · Biology major, Chemistry minor'], ['Industry', 'Biocon, Bengaluru', 'API R&D · analytical workflows · reproducibility'], ['Research', 'CSIR-NIO, Goa', 'Marine microbiology · antimicrobial screening'], ['Now', 'WDR62 thesis · IISER Tirupati', 'Actin architecture and cell movement'], ['Next', 'PhD research', 'Cell biology, disease mechanisms and translation'],
           ].map(([year, place, copy], i) => <article key={place} style={{ '--i': i }}><i /><span>{year}</span><h3>{place}</h3><p>{copy}</p></article>)}</div>
         </section>
 
