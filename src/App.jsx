@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useMemo, useRef, useState } from 'react'
+import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
@@ -341,6 +341,20 @@ function App() {
   const hero = useRef(null)
 
   const visibleProjects = useMemo(() => projects.filter(p => filter === 'All' || p.category === filter), [filter])
+
+  useLayoutEffect(() => {
+    const previousRestoration = history.scrollRestoration
+    history.scrollRestoration = 'manual'
+
+    const navigation = performance.getEntriesByType('navigation')[0]
+    if (navigation?.type === 'reload') {
+      history.replaceState(null, '', `${location.pathname}${location.search}`)
+      scrollTo({ top: 0, left: 0, behavior: 'instant' })
+      requestAnimationFrame(() => scrollTo({ top: 0, left: 0, behavior: 'instant' }))
+    }
+
+    return () => { history.scrollRestoration = previousRestoration }
+  }, [])
 
   useEffect(() => {
     gsap.registerPlugin(ScrollTrigger)
