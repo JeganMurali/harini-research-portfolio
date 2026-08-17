@@ -127,9 +127,10 @@ em { color: var(--coral); font-weight: 400; }
 .thesis__story h2 { margin: 22px 0 28px; font-family: var(--serif); font-size: clamp(52px, 5.3vw, 92px); line-height: .91; letter-spacing: -.045em; font-weight: 400; }
 .thesis__story > p:not(.eyebrow) { max-width: 690px; color: rgba(251,249,243,.66); line-height: 1.7; font-size: 16px; }
 .thesis-controls { display: grid; grid-template-columns: repeat(4,1fr); margin-top: 40px; border-top: 1px solid var(--line-light); border-bottom: 1px solid var(--line-light); }
-.thesis-controls button { min-height: 90px; padding: 14px 8px 12px 0; border: 0; border-right: 1px solid var(--line-light); background: transparent; color: rgba(251,249,243,.42); text-align: left; transition: color .25s, background .25s; }
+.thesis-controls button { position:relative; min-height: 96px; padding: 16px 16px 14px; border: 0; border-right: 1px solid var(--line-light); background: transparent; color: rgba(251,249,243,.42); text-align: left; transition: color .25s, background .25s; }
 .thesis-controls button:last-child { border-right: 0; }.thesis-controls button.is-active { color: var(--white); background: rgba(159,216,199,.06); }
-.thesis-controls span, .thesis-controls small { display: block; font-size: 8px; letter-spacing: .12em; text-transform: uppercase; }.thesis-controls strong { display: block; margin: 9px 0; font-family: var(--serif); font-size: 20px; font-weight: 400; }.thesis-controls small { color: var(--coral); }
+.thesis-controls button.is-active::after{content:'';position:absolute;left:16px;right:16px;bottom:-1px;height:2px;background:var(--coral)}
+.thesis-controls span, .thesis-controls small { display: block; font-size: 8px; letter-spacing: .12em; text-transform: uppercase; }.thesis-controls strong { display: block; margin: 10px 0 9px; font-family: var(--serif); font-size: 21px; line-height:1; font-weight: 400; }.thesis-controls small { color: var(--coral); }
 .thesis-readout { min-height: 120px; display: grid; grid-template-columns: 55px 1fr; gap: 22px; padding: 24px 0; animation: readout-in .45s ease both; }
 .thesis-readout span { color: var(--coral); font-size: 9px; }.thesis-readout p { margin: 0; color: rgba(251,249,243,.82); font-size: 16px; line-height: 1.6; }
 .supervisor { margin-top: 12px; padding-top: 18px; border-top: 1px solid var(--line-light); color: rgba(251,249,243,.55); font-size: 11px; }.supervisor span { display: block; margin-bottom: 7px; color: white; font-size: 8px; letter-spacing: .13em; text-transform: uppercase; }
