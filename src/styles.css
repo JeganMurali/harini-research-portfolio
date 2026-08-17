@@ -96,6 +96,7 @@ em { color: var(--coral); font-weight: 400; }
 .profile-facts article:first-child { padding-left:0; }.profile-facts article:last-child{border-right:0}
 .profile-facts span,.capability-evidence span { color:#60777a; font-size:8px; letter-spacing:.15em; text-transform:uppercase; }
 .profile-facts strong { max-width:310px; font-family:var(--serif); font-size:23px; line-height:1.15; font-weight:400; }
+.profile-facts small { max-width:310px; color:#496367; font-size:11px; line-height:1.45; letter-spacing:.025em; }
 .capability-lab { display:grid; grid-template-columns:minmax(300px,.72fr) minmax(0,1.28fr); margin:90px 0 0 105px; border:1px solid var(--line); background:var(--paper); }
 .capability-lab nav { border-right:1px solid var(--line); }
 .capability-lab nav button { width:100%; min-height:88px; padding:18px 23px; display:grid; grid-template-columns:35px 1fr 20px; align-items:center; gap:10px; border:0; border-bottom:1px solid var(--line); background:transparent; text-align:left; transition:background .25s,color .25s; }

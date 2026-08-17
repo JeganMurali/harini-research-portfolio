@@ -290,7 +290,7 @@ function ReviewerMode({ onClose }) {
           <section><span>Current thesis</span><h3>Mechanistic dissection of WDR62</h3><p>Non-mitotic roles in actin architecture and protrusion dynamics.</p></section>
           <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>Questions followed across molecular, cellular and microbial scales.</p></section>
           <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>Cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
-          <section><span>PhD direction</span><h3>Cancer progression and disease remodelling</h3><p>Interested in how signalling, cellular architecture and tissue environments are reshaped during disease.</p></section>
+          <section><span>PhD direction</span><h3>Mechanistic cell biology and disease</h3><p>Particularly interested in cancer progression and disease-associated cellular remodelling.</p></section>
         </div>
         <div className="reviewer__actions"><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a></div>
       </article>
@@ -451,7 +451,7 @@ function App() {
           <div className="profile-facts" aria-label="Researcher summary">
             <article><span>Current focus</span><strong>WDR62, actin architecture and cell movement</strong></article>
             <article><span>Research range</span><strong>Cellular · molecular · microbial · computational</strong></article>
-            <article><span>PhD direction</span><strong>Cancer progression and disease-associated cellular remodelling</strong></article>
+            <article><span>PhD direction</span><strong>Mechanistic cell biology and disease</strong><small>Cancer progression and disease-associated cellular remodelling</small></article>
           </div>
           <div className="capability-lab" id="methods">
             <nav aria-label="Research capabilities">
