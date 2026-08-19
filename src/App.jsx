@@ -157,7 +157,9 @@ function CellField() {
   useEffect(() => {
     const canvas = ref.current
     const ctx = canvas.getContext('2d')
-    let frame
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+    let frame = 0
+    let active = true
     let points = []
     const resize = () => {
       const dpr = Math.min(devicePixelRatio, 2)
@@ -182,10 +184,20 @@ function CellField() {
         ctx.fillStyle = i % 7 === 0 ? `rgba(239,141,114,${pulse})` : `rgba(159,216,199,${pulse})`
         ctx.fill()
       })
-      frame = requestAnimationFrame(draw)
+      frame = reduceMotion || !active ? 0 : requestAnimationFrame(draw)
     }
-    resize(); draw(); addEventListener('resize', resize)
-    return () => { cancelAnimationFrame(frame); removeEventListener('resize', resize) }
+    const observer = new IntersectionObserver(([entry]) => {
+      active = entry.isIntersecting && !document.hidden
+      if (!active && frame) { cancelAnimationFrame(frame); frame = 0 }
+      if (active && !frame) draw()
+    })
+    const onVisibility = () => {
+      active = !document.hidden && canvas.getBoundingClientRect().bottom > 0
+      if (!active && frame) { cancelAnimationFrame(frame); frame = 0 }
+      if (active && !frame) draw()
+    }
+    resize(); draw(); observer.observe(canvas); addEventListener('resize', resize); document.addEventListener('visibilitychange', onVisibility)
+    return () => { cancelAnimationFrame(frame); observer.disconnect(); removeEventListener('resize', resize); document.removeEventListener('visibilitychange', onVisibility) }
   }, [])
   return <canvas className="cell-field" ref={ref} aria-hidden="true" />
 }
@@ -228,27 +240,66 @@ function EvidenceViewer({ project }) {
   if (!image) return <div className="evidence-note"><span>Nature of evidence</span><p>{project.evidence}</p><small>This project is represented by an interactive mechanism visual because its output was literature-, training- or concept-led.</small></div>
   return (
     <div className="evidence-viewer" onPointerMove={move} data-cursor="microscope">
-      <img src={image} alt={`Source evidence for ${project.title}`} />
-      {project.secondary && <img className="evidence-viewer__secondary" src={project.secondary} alt="Supporting source figure" />}
+      <img src={image} alt={`Source evidence for ${project.title}`} loading="lazy" decoding="async" />
+      {project.secondary && <img className="evidence-viewer__secondary" src={project.secondary} alt="Supporting source figure" loading="lazy" decoding="async" />}
       <span className="evidence-viewer__hint">Move to inspect · source figure</span>
     </div>
   )
 }
 
+function useDialogA11y(onClose) {
+  const dialogRef = useRef(null)
+  const closeRef = useRef(onClose)
+  closeRef.current = onClose
+
+  useEffect(() => {
+    const previousFocus = document.activeElement
+    const previousOverflow = document.body.style.overflow
+    const dialog = dialogRef.current
+    document.body.style.overflow = 'hidden'
+    dialog?.focus()
+
+    const onKeyDown = (event) => {
+      if (event.key === 'Escape') {
+        event.preventDefault()
+        closeRef.current()
+        return
+      }
+      if (event.key !== 'Tab' || !dialog) return
+      const focusable = [...dialog.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')]
+      if (!focusable.length) {
+        event.preventDefault()
+        dialog.focus()
+        return
+      }
+      const first = focusable[0]
+      const last = focusable[focusable.length - 1]
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault(); last.focus()
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault(); first.focus()
+      }
+    }
+
+    addEventListener('keydown', onKeyDown)
+    return () => {
+      document.body.style.overflow = previousOverflow
+      removeEventListener('keydown', onKeyDown)
+      if (previousFocus instanceof HTMLElement) previousFocus.focus()
+    }
+  }, [])
+
+  return dialogRef
+}
+
 function Dossier({ project, onClose }) {
   const [chapter, setChapter] = useState('story')
-  useEffect(() => {
-    setChapter('story')
-    const previous = document.body.style.overflow
-    document.body.style.overflow = 'hidden'
-    const close = (event) => event.key === 'Escape' && onClose()
-    addEventListener('keydown', close)
-    return () => { document.body.style.overflow = previous; removeEventListener('keydown', close) }
-  }, [project, onClose])
+  const dialogRef = useDialogA11y(onClose)
+  useEffect(() => setChapter('story'), [project])
   const chapters = ['story', 'method', 'evidence', 'next']
   return (
     <div className="dossier-backdrop" role="presentation" onMouseDown={onClose}>
-      <article className="dossier" role="dialog" aria-modal="true" aria-label={`${project.title} research dossier`} onMouseDown={(e) => e.stopPropagation()}>
+      <article ref={dialogRef} className="dossier" role="dialog" aria-modal="true" aria-label={`${project.title} research dossier`} tabIndex={-1} onMouseDown={(e) => e.stopPropagation()}>
         <header className="dossier__header">
           <div><span>{project.number}</span><p>Research dossier<small>{[project.period, project.status].filter(Boolean).join(' · ')}</small></p></div>
           <nav aria-label="Dossier chapters">
@@ -287,9 +338,10 @@ function Dossier({ project, onClose }) {
 }
 
 function ReviewerMode({ onClose }) {
+  const dialogRef = useDialogA11y(onClose)
   return (
     <div className="reviewer-backdrop" onMouseDown={onClose}>
-      <article className="reviewer" role="dialog" aria-modal="true" aria-label="PhD reviewer quick view" onMouseDown={(e) => e.stopPropagation()}>
+      <article ref={dialogRef} className="reviewer" role="dialog" aria-modal="true" aria-label="PhD reviewer quick view" tabIndex={-1} onMouseDown={(e) => e.stopPropagation()}>
         <button onClick={onClose} aria-label="Close reviewer mode">×</button>
         <p className="eyebrow">90-second view</p><h2>PhD reviewer mode</h2>
         <div className="reviewer__grid">
@@ -304,6 +356,25 @@ function ReviewerMode({ onClose }) {
   )
 }
 
+function DeferredWdrScene({ step }) {
+  const host = useRef(null)
+  const [active, setActive] = useState(false)
+
+  useEffect(() => {
+    const observer = new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { rootMargin: '450px 0px' })
+    if (host.current) observer.observe(host.current)
+    return () => observer.disconnect()
+  }, [])
+
+  return (
+    <div className="deferred-scene" ref={host}>
+      {active
+        ? <Suspense fallback={<div className="scene-loading"><i /><span>Resolving cell architecture</span></div>}><WdrScene step={step} /></Suspense>
+        : <div className="scene-loading"><i /><span>Conceptual cell model waits below</span></div>}
+    </div>
+  )
+}
+
 function CurrentChapter({ step, onStep }) {
   return <>
     <section className="prologue section-pad" id="current-question" data-chapter>
@@ -314,7 +385,7 @@ function CurrentChapter({ step, onStep }) {
 
     <section className="thesis" id="thesis">
       <div className="thesis__scene" data-cursor="drag 3D model">
-        <Suspense fallback={<div className="scene-loading"><i /><span>Resolving cell architecture</span></div>}><WdrScene step={step} /></Suspense>
+        <DeferredWdrScene step={step} />
         <div className="scene-hud scene-hud--top"><span>Live conceptual model</span><b>WDR62 / leading edge</b></div>
         <div className="scene-hud scene-hud--bottom"><span>{thesisSteps[step].cue}</span><b>Drag to rotate</b></div>
       </div>
@@ -492,7 +563,7 @@ function App() {
         </section>
 
         <section className="research-worlds" id="journey-stories">
-          <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing my movement through academic, industrial and marine research environments" /><div className="worlds__shade" /></div>
+          <div className="worlds__sticky"><picture className="worlds__picture"><source media="(max-width: 780px)" srcSet="/assets/research-worlds-mobile.webp" type="image/webp" /><source srcSet="/assets/research-worlds-v2.webp" type="image/webp" /><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing my movement through academic, industrial and marine research environments" loading="lazy" decoding="async" /></picture><div className="worlds__shade" /></div>
           <div className="worlds__intro"><p className="eyebrow">My formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
           <div className="world-chapters">
             <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3 data-reveal>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>

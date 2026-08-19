@@ -8,9 +8,7 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks(id) {
-          if (id.includes('three') || id.includes('@react-three')) return 'three-scene'
           if (id.includes('gsap')) return 'motion'
-          if (id.includes('react')) return 'react-vendor'
         },
       },
     },
