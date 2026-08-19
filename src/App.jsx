@@ -472,7 +472,25 @@ function App() {
           </div>
         </section>
 
-        <section className="research-worlds" id="journey">
+        <section className="trajectory section-pad" id="journey">
+          <div className="trajectory__heading" data-chapter>
+            <div className="chapter-label"><span>Research journey</span><b>02</b></div>
+            <div>
+              <p className="eyebrow">From foundation to an independent question</p>
+              <h2 data-reveal>One journey. <em>A continuously sharper way of asking why.</em></h2>
+              <p className="lead">Harini’s path moves from interdisciplinary training to industrial discipline, ecological microbiology and mechanistic cell biology.</p>
+            </div>
+          </div>
+          <div className="living-line" aria-label="Harini’s research journey timeline">
+            <article data-chapter><i aria-hidden="true" /><span>2022–May 2024 · Tirupati</span><h3>IISER foundation</h3><p>BS–MS training in Biology and Chemistry, followed by a winter study of bacterial signalling pathways.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>3 Jun–31 Jul 2024 · Bengaluru</span><h3>Biocon</h3><p>Industrial training in API R&amp;D introduced analytical discipline, reproducibility and SOP-led workflows.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>19 May–25 Jul 2025 · Goa</span><h3>CSIR-NIO</h3><p>A marine microbiology internship explored antimicrobial activity in coral-associated microbial communities.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>Aug 2025–Mar 2026 · Tirupati</span><h3>Two toolkits converge</h3><p>TMEM135 computational biology and split-GFP molecular work expanded how cellular questions could be tested.</p></article>
+            <article className="is-current" data-chapter><i aria-hidden="true" /><span>24 May 2026–Present</span><h3>WDR62 MS thesis</h3><p>Current work asks how a mitotic scaffold influences actin architecture, cell movement and disease-relevant remodelling.</p></article>
+          </div>
+        </section>
+
+        <section className="research-worlds" id="journey-stories">
           <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing Harini’s movement through academic, industrial and marine research environments" /><div className="worlds__shade" /></div>
           <div className="worlds__intro"><p className="eyebrow">A researcher in formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
           <div className="world-chapters">
