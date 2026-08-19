@@ -18,11 +18,12 @@ const projects = [
     methods: ['Molecular cloning', 'HEK293T culture', 'Split-GFP', 'Fluorescence imaging'],
     image: '/assets/wdr62-split-gfp.jpg', secondary: '/assets/wdr62-gel.jpg', visual: 'split',
     report: '/documents/projects/WDR62-split-GFP-report.docx', reportLabel: 'Download project report',
-    status: 'Platform validation',
+    status: 'Semester project · platform validation',
+    period: 'January–March 2026', supervisor: 'Dr Pavithra Lakshminarasimhan Chavali',
   },
   {
     id: 'coral', number: '02', category: 'Wet lab', world: 'Survival',
-    title: 'Finding defence in a coral microbiome', short: 'CSIR-NIO · Marine microbiology · 2025',
+    title: 'Finding defence in a coral microbiome', short: 'CSIR-NIO · Marine microbiology · May–July 2025',
     question: 'Can coral-associated bacteria produce metabolites that suppress clinically and ecologically relevant pathogens?',
     why: 'Coral microbial communities are chemical ecosystems. Their defensive metabolites may reveal new antimicrobial activity and ecological relationships.',
     approach: ['Cultured seven coral-associated bacterial strains', 'Extracted metabolites with ethyl acetate', 'Screened against V. harveyi, V. cholerae and MRSA', 'Compared culture conditions shaping antimicrobial activity'],
@@ -34,6 +35,7 @@ const projects = [
     image: '/assets/coral-assay-plates.jpg', secondary: '/assets/coral-temperature-chart.jpg', visual: 'coral',
     report: '/documents/projects/coral-microbiome-report.docx', reportLabel: 'Download internship report',
     status: 'Research internship',
+    period: '19 May–25 July 2025',
   },
   {
     id: 'tmem135', number: '03', category: 'Computational', world: 'Structures',
@@ -48,7 +50,8 @@ const projects = [
     methods: ['MAFFT', 'MEGA11', 'Datamonkey', 'TOPCONS', 'SWISS-MODEL'],
     image: '/assets/tmem135-structure.jpg', secondary: '/assets/tmem135-topology.jpg', visual: 'protein',
     report: '/documents/projects/TMEM135-report.docx', reportLabel: 'Download project report',
-    status: 'Computational project',
+    status: 'Semester computational project',
+    period: 'August–November 2025', supervisor: 'Dr Prasanna Katti',
   },
   {
     id: 'bacterial-signals', number: '04', category: 'Literature', world: 'Signals',
@@ -62,6 +65,7 @@ const projects = [
     next: 'Convert one architecture-level contrast into an experimentally testable signalling question.',
     methods: ['Literature synthesis', 'Pathway comparison', 'Scientific writing'], visual: 'signals',
     status: 'Winter literature project',
+    period: 'December 2023–January 2024',
   },
   {
     id: 'biocon', number: '05', category: 'Industry', world: 'Scale',
@@ -76,6 +80,7 @@ const projects = [
     methods: ['TLC', 'Preparative HPLC', 'Karl Fischer', 'SOP systems'], visual: 'chromatogram',
     report: '/documents/projects/Biocon-training-report.docx', reportLabel: 'Download training report',
     status: 'Industrial training',
+    period: '3 June–31 July 2024',
   },
   {
     id: 'neuronexus', number: '06', category: 'Presentation', world: 'Concept',
@@ -244,7 +249,7 @@ function Dossier({ project, onClose }) {
     <div className="dossier-backdrop" role="presentation" onMouseDown={onClose}>
       <article className="dossier" role="dialog" aria-modal="true" aria-label={`${project.title} research dossier`} onMouseDown={(e) => e.stopPropagation()}>
         <header className="dossier__header">
-          <div><span>{project.number}</span><p>Research dossier<small>{project.status}</small></p></div>
+          <div><span>{project.number}</span><p>Research dossier<small>{[project.period, project.status].filter(Boolean).join(' · ')}</small></p></div>
           <nav aria-label="Dossier chapters">
             {chapters.map((item, index) => <button key={item} onClick={() => setChapter(item)} className={chapter === item ? 'is-active' : ''}><small>0{index + 1}</small>{item}</button>)}
           </nav>
@@ -254,7 +259,7 @@ function Dossier({ project, onClose }) {
           <div className="dossier__visual"><ProjectVisual project={project} large /></div>
           <div className="dossier__panel" key={chapter}>
             {chapter === 'story' && <>
-              <p className="eyebrow">{project.short}</p><h2>{project.title}</h2>
+              <p className="eyebrow">{project.short}</p><h2>{project.title}</h2>{(project.period || project.supervisor) && <p className="dossier__credit">{project.period}{project.supervisor && ` · Supervised by ${project.supervisor}`}</p>}
               <div className="dossier__question"><span>The question</span><p>{project.question}</p></div>
               <div className="dossier__two"><div><span>Why it matters</span><p>{project.why}</p></div><div><span>My contribution</span><p>{project.contribution}</p></div></div>
             </>}
@@ -287,7 +292,7 @@ function ReviewerMode({ onClose }) {
         <button onClick={onClose} aria-label="Close reviewer mode">×</button>
         <p className="eyebrow">90-second view</p><h2>PhD reviewer mode</h2>
         <div className="reviewer__grid">
-          <section><span>Current thesis</span><h3>Mechanistic dissection of WDR62</h3><p>Non-mitotic roles in actin architecture and protrusion dynamics.</p></section>
+          <section><span>Current thesis · 24 May 2026–present</span><h3>Mechanistic dissection of WDR62</h3><p>Non-mitotic roles in actin architecture and protrusion dynamics.</p></section>
           <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>Questions followed across molecular, cellular and microbial scales.</p></section>
           <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>Cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
           <section><span>PhD direction</span><h3>Mechanistic cell biology and disease</h3><p>Particularly interested in cancer progression and disease-associated cellular remodelling.</p></section>
@@ -314,7 +319,7 @@ function CurrentChapter({ step, onStep }) {
       </div>
       <div className="thesis__story">
         <div className="chapter-label"><span>Present investigation</span><b>05</b></div>
-        <p className="eyebrow">Mechanistic dissection of WDR62 · ongoing MS thesis</p>
+        <p className="eyebrow">Mechanistic dissection of WDR62 · MS thesis · 24 May 2026–present</p>
         <h2 data-reveal>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
         <p>WDR62 is classically linked to spindle organisation and primary microcephaly. This thesis tests a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
         <div className="thesis-controls" role="tablist" aria-label="Thesis experimental logic">
@@ -472,9 +477,9 @@ function App() {
           <div className="worlds__intro"><p className="eyebrow">A researcher in formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
           <div className="world-chapters">
             <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3 data-reveal>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
-            <article data-chapter><span>02 · Biocon, Bengaluru · Industry</span><h3 data-reveal>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
-            <article data-chapter><span>03 · CSIR-NIO, Goa · Research</span><h3 data-reveal>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Marine microbiology · Screening · Extraction · Optimisation</small></article>
-            <article data-chapter><span>04 · IISER Tirupati · Return</span><h3 data-reveal>A broader toolkit met a sharper question.</h3><p>I returned to cell biology ready to connect molecular tools, imaging and dynamic measurements in the mechanistic study of WDR62 and cell movement.</p><small>Current MS thesis · WDR62 · Actin architecture</small></article>
+            <article data-chapter><span>02 · Biocon, Bengaluru · 3 June–31 July 2024</span><h3 data-reveal>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>Industrial training · TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
+            <article data-chapter><span>03 · CSIR-NIO, Goa · 19 May–25 July 2025</span><h3 data-reveal>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Research internship · Marine microbiology · Screening · Extraction · Optimisation</small></article>
+            <article data-chapter><span>04 · IISER Tirupati · 2025–present</span><h3 data-reveal>A broader toolkit met a sharper question.</h3><p>Two semester projects sharpened my computational and molecular toolkit before I began the current mechanistic study of WDR62 and cell movement.</p><small>TMEM135 with Dr Prasanna Katti · Aug–Nov 2025 · Split-GFP with Dr Pavithra Chavali · Jan–Mar 2026 · MS thesis · 24 May 2026–present</small></article>
           </div>
         </section>
 
@@ -485,7 +490,7 @@ function App() {
           <div className="project-filters">{filters.map(item => <button key={item} onClick={() => setFilter(item)} className={filter === item ? 'is-active' : ''}>{item}</button>)}</div>
           <div className="project-constellation">
             <svg className="constellation-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path d="M160 150C330 40 410 225 505 290S715 520 865 420"/><path d="M140 455C285 555 370 350 505 290S730 55 860 155"/></svg>
-            {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)}><ProjectVisual project={project} /><div className="project-node__copy"><div className="project-node__meta"><span>{project.number} · {project.category}</span><i>{project.status}</i></div><h3>{project.title}</h3><p>{project.question}</p><div className="project-node__methods">{project.methods.slice(0, 2).map(method => <span key={method}>{method}</span>)}</div><b>Open research dossier <Arrow /></b></div></button>)}
+            {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)}><ProjectVisual project={project} /><div className="project-node__copy"><div className="project-node__meta"><span>{project.number} · {project.category}{project.period && <small>{project.period}</small>}</span><i>{project.status}</i></div><h3>{project.title}</h3><p>{project.question}</p><div className="project-node__methods">{project.methods.slice(0, 2).map(method => <span key={method}>{method}</span>)}</div><b>Open research dossier <Arrow /></b></div></button>)}
           </div>
         </section>
 
