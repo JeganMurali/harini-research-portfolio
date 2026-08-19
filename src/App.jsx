@@ -86,6 +86,7 @@ const projects = [
     id: 'neuronexus', number: '06', category: 'Presentation', world: 'Concept',
     title: 'A speculative route into glioblastoma', short: 'NeuroNexus · Team presentation',
     question: 'Could an engineered viral delivery concept connect tumour tropism with targeted protein degradation?',
+    cardCopy: 'Conceptualised a PROTAC-inspired precision oncology strategy using engineered Zika virus-like particles for selective targeting of CD44⁺ glioblastoma stem cells, proposing targeted degradation of anti-apoptotic Bcl-2 proteins as a therapeutic approach (conceptual proposal, not experimentally tested).',
     why: 'The presentation explored how ideas from virology, RNA delivery and PROTAC biology might be assembled into a therapeutic concept.',
     approach: ['Team ideation', 'Literature synthesis', 'Mechanism mapping', 'Scientific presentation'],
     contribution: 'I contributed to collaborative concept development and mechanism-focused communication.',
@@ -508,7 +509,7 @@ function App() {
           <div className="project-filters">{filters.map(item => <button key={item} onClick={() => setFilter(item)} className={filter === item ? 'is-active' : ''}>{item}</button>)}</div>
           <div className="project-constellation">
             <svg className="constellation-lines" viewBox="0 0 1000 600" preserveAspectRatio="none" aria-hidden="true"><path d="M160 150C330 40 410 225 505 290S715 520 865 420"/><path d="M140 455C285 555 370 350 505 290S730 55 860 155"/></svg>
-            {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)}><ProjectVisual project={project} /><div className="project-node__copy"><div className="project-node__meta"><span>{project.number} · {project.category}{project.period && <small>{project.period}</small>}</span><i>{project.status}</i></div><h3>{project.title}</h3><p>{project.question}</p><div className="project-node__methods">{project.methods.slice(0, 2).map(method => <span key={method}>{method}</span>)}</div><b>Open research dossier <Arrow /></b></div></button>)}
+            {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)}><ProjectVisual project={project} /><div className="project-node__copy"><div className="project-node__meta"><span>{project.number} · {project.category}{project.period && <small>{project.period}</small>}</span><i>{project.status}</i></div><h3>{project.title}</h3><p>{project.cardCopy || project.question}</p><div className="project-node__methods">{project.methods.slice(0, 2).map(method => <span key={method}>{method}</span>)}</div><b>Open research dossier <Arrow /></b></div></button>)}
           </div>
         </section>
 
