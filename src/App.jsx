@@ -11,7 +11,7 @@ const projects = [
     question: 'Can WDR62 bring two signalling proteins close enough to restore a fluorescent signal?',
     why: 'Spatial proximity can reveal how a scaffold coordinates signalling inside a living cell. Split-GFP turns that otherwise invisible relationship into a readable cellular event.',
     approach: ['Designed split-GFP fusion constructs', 'PCR, digestion, ligation and transformation', 'Screened colonies and prepared sequencing samples', 'Transfected HEK293T cells and established fluorescence controls'],
-    contribution: 'Harini worked across the complete validation chain—from construct logic to mammalian-cell fluorescence controls.',
+    contribution: 'I worked across the complete validation chain—from construct logic to mammalian-cell fluorescence controls.',
     evidence: 'The report documents cloning checks, gel validation and split-GFP fluorescence controls.',
     learning: 'A strong molecular tool needs controls that distinguish real complementation from expression, localisation and background fluorescence.',
     next: 'Use the validated platform to test candidate WDR62-mediated PDPK1–AKT1 proximity under defined cellular conditions.',
@@ -27,7 +27,7 @@ const projects = [
     question: 'Can coral-associated bacteria produce metabolites that suppress clinically and ecologically relevant pathogens?',
     why: 'Coral microbial communities are chemical ecosystems. Their defensive metabolites may reveal new antimicrobial activity and ecological relationships.',
     approach: ['Cultured seven coral-associated bacterial strains', 'Extracted metabolites with ethyl acetate', 'Screened against V. harveyi, V. cholerae and MRSA', 'Compared culture conditions shaping antimicrobial activity'],
-    contribution: 'Harini handled culture, extraction, disc diffusion, optimisation, TLC preparation and experimental documentation.',
+    contribution: 'I handled culture, extraction, disc diffusion, optimisation, TLC preparation and experimental documentation.',
     evidence: 'Assay plates and condition-comparison plots record strain-specific inhibition and optimisation results.',
     learning: 'Bioactivity is conditional: medium, temperature and extraction choices can change the biological story.',
     next: 'Fractionate active extracts, repeat quantitative testing and connect active fractions to chemical identity.',
@@ -43,7 +43,7 @@ const projects = [
     question: 'Which parts of TMEM135 remain conserved when evolution changes the organism around it?',
     why: 'Conserved sequence, topology and structure can expose regions most likely to carry essential biological function.',
     approach: ['Retrieved orthologous sequences across five model organisms', 'Built alignments and phylogenetic comparisons', 'Examined codon-level selection and conserved domains', 'Compared topology predictions and homology models'],
-    contribution: 'Harini connected sequence, evolutionary constraint, membrane topology and predicted structure into one comparative analysis.',
+    contribution: 'I connected sequence, evolutionary constraint, membrane topology and predicted structure into one comparative analysis.',
     evidence: 'The project report contains predicted structures, topology plots, alignments and evolutionary analyses.',
     learning: 'No single prediction is decisive; confidence emerges when independent computational views agree.',
     next: 'Prioritise conserved residues for targeted mutagenesis or functional validation in a cellular model.',
@@ -59,7 +59,7 @@ const projects = [
     question: 'How do different bacterial systems convert an external cue into an organised response?',
     why: 'Comparing signalling architectures reveals recurring control principles and pathogen-specific vulnerabilities.',
     approach: ['Synthesised primary literature', 'Compared pathway architectures', 'Mapped second-messenger logic', 'Developed mechanistic hypotheses'],
-    contribution: 'Harini translated a dispersed literature into a structured comparison of bacterial signalling strategies.',
+    contribution: 'I translated a dispersed literature into a structured comparison of bacterial signalling strategies.',
     evidence: 'The output is a literature-led mechanistic synthesis rather than an experimental study.',
     learning: 'Comparative reading is most useful when it produces testable contrasts, not only a catalogue of pathways.',
     next: 'Convert one architecture-level contrast into an experimentally testable signalling question.',
@@ -73,7 +73,7 @@ const projects = [
     question: 'What changes when experimental chemistry must become traceable, reproducible and safe at industrial scale?',
     why: 'Industrial R&D connects analytical technique with documentation, process discipline, safety and quality systems.',
     approach: ['Observed API R&D workflows', 'Trained in analytical and purification techniques', 'Worked within SOP-led documentation', 'Learned safety and quality expectations'],
-    contribution: 'An eight-week immersion in TLC, preparative HPLC, rotary evaporation, vacuum drying and Karl Fischer analysis.',
+    contribution: 'I completed an eight-week immersion in TLC, preparative HPLC, rotary evaporation, vacuum drying and Karl Fischer analysis.',
     evidence: 'The training report records techniques, process context and regulated laboratory practices.',
     learning: 'Reproducibility is a system of decisions—documentation and process control matter as much as technique.',
     next: 'Carry industrial standards of traceability and reproducibility into future experimental research.',
@@ -88,7 +88,7 @@ const projects = [
     question: 'Could an engineered viral delivery concept connect tumour tropism with targeted protein degradation?',
     why: 'The presentation explored how ideas from virology, RNA delivery and PROTAC biology might be assembled into a therapeutic concept.',
     approach: ['Team ideation', 'Literature synthesis', 'Mechanism mapping', 'Scientific presentation'],
-    contribution: 'Harini contributed to collaborative concept development and mechanism-focused communication.',
+    contribution: 'I contributed to collaborative concept development and mechanism-focused communication.',
     evidence: 'This is a presentation and speculative design exercise—not experimentally tested research.',
     learning: 'Ambitious translational ideas become credible only when assumptions, safety constraints and validation steps are explicit.',
     next: 'Define feasibility gates and validation experiments before making any claim about therapeutic potential.',
@@ -293,11 +293,11 @@ function ReviewerMode({ onClose }) {
         <p className="eyebrow">90-second view</p><h2>PhD reviewer mode</h2>
         <div className="reviewer__grid">
           <section><span>Current thesis · 24 May 2026–present</span><h3>Mechanistic dissection of WDR62</h3><p>Non-mitotic roles in actin architecture and protrusion dynamics.</p></section>
-          <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>Questions followed across molecular, cellular and microbial scales.</p></section>
-          <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>Cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
-          <section><span>PhD direction</span><h3>Mechanistic cell biology and disease</h3><p>Particularly interested in cancer progression and disease-associated cellular remodelling.</p></section>
+          <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>I follow questions across molecular, cellular and microbial scales.</p></section>
+          <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>I work with cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
+          <section><span>PhD direction</span><h3>Mechanistic cell biology and disease</h3><p>I am particularly interested in cancer progression and disease-associated cellular remodelling.</p></section>
         </div>
-        <div className="reviewer__actions"><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a></div>
+        <div className="reviewer__actions"><a href="/documents/Harini_Madheswaran_CV.docx" download>Download my CV <Arrow /></a><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email me <Arrow /></a></div>
       </article>
     </div>
   )
@@ -307,7 +307,7 @@ function CurrentChapter({ step, onStep }) {
   return <>
     <section className="prologue section-pad" id="current-question" data-chapter>
       <div className="chapter-label"><span>Current chapter</span><b>04</b></div>
-      <div><p className="eyebrow">Where the journey has led</p><h2 data-reveal>What tells a cell <em>where to move?</em></h2><p className="lead">The experiences before this thesis built Harini’s experimental range. Her current work brings that range into one mechanistic question at the leading edge—where actin reorganises, proteins exchange and cell movement begins.</p></div>
+      <div><p className="eyebrow">Where my journey has led</p><h2 data-reveal>What tells a cell <em>where to move?</em></h2><p className="lead">The experiences before this thesis built my experimental range. My current work brings that range into one mechanistic question at the leading edge—where actin reorganises, proteins exchange and cell movement begins.</p></div>
       <div className="prologue__pulse"><i /><span>experience</span><b>question</b></div>
     </section>
 
@@ -321,7 +321,7 @@ function CurrentChapter({ step, onStep }) {
         <div className="chapter-label"><span>Present investigation</span><b>05</b></div>
         <p className="eyebrow">Mechanistic dissection of WDR62 · MS thesis · 24 May 2026–present</p>
         <h2 data-reveal>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
-        <p>WDR62 is classically linked to spindle organisation and primary microcephaly. This thesis tests a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
+        <p>WDR62 is classically linked to spindle organisation and primary microcephaly. In this thesis, I test a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
         <div className="thesis-controls" role="tablist" aria-label="Thesis experimental logic">
           {thesisSteps.map((item, index) => <button key={item.title} onClick={() => onStep(index)} className={step === index ? 'is-active' : ''} role="tab" aria-selected={step === index}><span>0{index + 1}</span><strong>{item.title}</strong><small>{item.verb}</small></button>)}
         </div>
@@ -439,21 +439,21 @@ function App() {
             <h2 className="hero__role">Experimental biologist investigating how cells organise, communicate and adapt.</h2>
             <p>I combine cell biology, molecular experimentation, microbiology and computational analysis to turn mechanistic questions into testable experiments.</p>
             <blockquote>Inside every cell, structure becomes decision.</blockquote>
-            <div className="hero__actions"><a href="#about" className="button button--light">Meet the researcher <Arrow down /></a><a href="#journey" className="button button--ghost">Follow the journey <Arrow /></a></div>
+            <div className="hero__actions"><a href="#about" className="button button--light">Meet me <Arrow down /></a><a href="#journey" className="button button--ghost">Follow my journey <Arrow /></a></div>
           </div>
           <div className="hero__readout"><span>IISER Tirupati · Cell biology</span><span>Wet lab · Computation · Scientific synthesis</span><button onClick={() => setReviewerOpen(true)}>90-second reviewer view <Arrow /></button></div>
         </section>
 
         <section className="researcher-profile section-pad" id="about" data-chapter>
           <div className="profile-intro">
-            <div className="chapter-label"><span>Researcher profile</span><b>01</b></div>
+            <div className="chapter-label"><span>My profile</span><b>01</b></div>
             <div>
               <p className="eyebrow">Who I am · What I bring</p>
               <h2 data-reveal>I move between biological scales, while keeping the question <em>experimentally grounded.</em></h2>
               <p className="profile-lead">I am a BS–MS student at IISER Tirupati, majoring in Biology with a Chemistry minor. My work spans mammalian cells, molecular signalling, microbial systems and computational biology. Across each setting, I look for the experiment that can turn an observation into a mechanism.</p>
             </div>
           </div>
-          <div className="profile-facts" aria-label="Researcher summary">
+          <div className="profile-facts" aria-label="My research summary">
             <article><span>Current focus</span><strong>WDR62, actin architecture and cell movement</strong></article>
             <article><span>Research range</span><strong>Cellular · molecular · microbial · computational</strong></article>
             <article><span>PhD direction</span><strong>Mechanistic cell biology and disease</strong><small>Cancer progression and disease-associated cellular remodelling</small></article>
@@ -478,21 +478,21 @@ function App() {
             <div>
               <p className="eyebrow">From foundation to an independent question</p>
               <h2 data-reveal>One journey. <em>A continuously sharper way of asking why.</em></h2>
-              <p className="lead">Harini’s path moves from interdisciplinary training to industrial discipline, ecological microbiology and mechanistic cell biology.</p>
+              <p className="lead">My path moves from interdisciplinary training to industrial discipline, ecological microbiology and mechanistic cell biology.</p>
             </div>
           </div>
-          <div className="living-line" aria-label="Harini’s research journey timeline">
-            <article data-chapter><i aria-hidden="true" /><span>2022–May 2024 · Tirupati</span><h3>IISER foundation</h3><p>BS–MS training in Biology and Chemistry, followed by a winter study of bacterial signalling pathways.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>3 Jun–31 Jul 2024 · Bengaluru</span><h3>Biocon</h3><p>Industrial training in API R&amp;D introduced analytical discipline, reproducibility and SOP-led workflows.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>19 May–25 Jul 2025 · Goa</span><h3>CSIR-NIO</h3><p>A marine microbiology internship explored antimicrobial activity in coral-associated microbial communities.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>Aug 2025–Mar 2026 · Tirupati</span><h3>Two toolkits converge</h3><p>TMEM135 computational biology and split-GFP molecular work expanded how cellular questions could be tested.</p></article>
-            <article className="is-current" data-chapter><i aria-hidden="true" /><span>24 May 2026–Present</span><h3>WDR62 MS thesis</h3><p>Current work asks how a mitotic scaffold influences actin architecture, cell movement and disease-relevant remodelling.</p></article>
+          <div className="living-line" aria-label="My research journey timeline">
+            <article data-chapter><i aria-hidden="true" /><span>2022–May 2024 · Tirupati</span><h3>IISER foundation</h3><p>My BS–MS training in Biology and Chemistry led into a winter study of bacterial signalling pathways.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>3 Jun–31 Jul 2024 · Bengaluru</span><h3>Biocon</h3><p>At Biocon, I learned how analytical discipline, reproducibility and SOP-led workflows shape industrial API R&amp;D.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>19 May–25 Jul 2025 · Goa</span><h3>CSIR-NIO</h3><p>At CSIR-NIO, I explored antimicrobial activity in coral-associated microbial communities.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>Aug 2025–Mar 2026 · Tirupati</span><h3>Two toolkits converge</h3><p>I brought computational work on TMEM135 together with molecular experimentation using split-GFP.</p></article>
+            <article className="is-current" data-chapter><i aria-hidden="true" /><span>24 May 2026–Present</span><h3>WDR62 MS thesis</h3><p>I now ask how a mitotic scaffold influences actin architecture, cell movement and disease-relevant remodelling.</p></article>
           </div>
         </section>
 
         <section className="research-worlds" id="journey-stories">
-          <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing Harini’s movement through academic, industrial and marine research environments" /><div className="worlds__shade" /></div>
-          <div className="worlds__intro"><p className="eyebrow">A researcher in formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
+          <div className="worlds__sticky"><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing my movement through academic, industrial and marine research environments" /><div className="worlds__shade" /></div>
+          <div className="worlds__intro"><p className="eyebrow">My formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
           <div className="world-chapters">
             <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3 data-reveal>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
             <article data-chapter><span>02 · Biocon, Bengaluru · 3 June–31 July 2024</span><h3 data-reveal>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>Industrial training · TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
@@ -516,7 +516,7 @@ function App() {
 
         <section className="contact" id="chapter-5">
           <div className="contact__field"><span>?</span><div className="contact__rings"><i /><i /><i /></div><p>The next question is still open.</p></div>
-          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2 data-reveal>Let’s ask what biology reveals next.</h2><p>Harini is interested in doctoral research exploring how signalling, cellular architecture and tissue environments are remodelled during cancer progression and other disease states.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email Harini <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
+          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2 data-reveal>Let’s ask what biology reveals next.</h2><p>I am interested in doctoral research exploring how signalling, cellular architecture and tissue environments are remodelled during cancer progression and other disease states.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email me <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download my CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
         </section>
       </main>
       <footer><span>Harini Madheswaran · Research Portfolio</span><span>Biology · Chemistry · 2026</span></footer>
