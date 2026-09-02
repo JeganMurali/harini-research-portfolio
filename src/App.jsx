@@ -3,6 +3,7 @@ import gsap from 'gsap'
 import { ScrollTrigger } from 'gsap/ScrollTrigger'
 
 const WdrScene = lazy(() => import('./WdrScene'))
+const ZebrafishScene = lazy(() => import('./ZebrafishScene'))
 
 const projects = [
   {
@@ -137,6 +138,47 @@ const capabilities = [
     evidence: 'TMEM135 comparative biology project',
     methods: ['Alignment', 'Phylogeny', 'Topology', 'Structure prediction'],
   },
+]
+
+const zebrafishPaper = {
+  title: 'Visualizing Cancer Cell Migration and Invasion in Real Time: Mechanistic Principles, Assay Platforms, and Zebrafish In Vivo Models',
+  authors: [
+    { name: 'Udhayakumar Gopal', role: 'Corresponding author', affiliation: 'Huntsman Cancer Institute, University of Utah' },
+    { name: 'Harini Madheswaran', role: 'Co-author', affiliation: 'Department of Biology, IISER Tirupati' },
+  ],
+  status: 'Manuscript submitted for publication',
+  summary: 'Turns a fragmented literature into one decision framework: which assay actually answers which question about cancer cell migration.',
+  keywords: ['Migration plasticity', 'Danio rerio', 'Glioblastoma', 'Precision oncology'],
+  report: '/documents/projects/zebrafish-cancer-migration-review.docx', reportLabel: 'Read the manuscript',
+}
+
+const assayGuide = [
+  { id: 'local', label: 'Local invasion', sites: ['Yolk sac', 'Perivitelline space'], platform: 'Yolk sac / perivitelline xenograft', why: 'Cells sit against host epithelium and vasculature. Days of imaging give local outgrowth, radial invasion and angiogenic remodelling.', limit: 'No hematogenous spread or organotropism.', source: '§5.1' },
+  { id: 'vascular', label: 'Vascular arrest', sites: ['Duct of Cuvier', 'Caudal vein'], platform: 'Intravascular · duct of Cuvier or caudal vein', why: 'Mimics hematogenous circulation. Vascular reporters resolve arrest sites, extravasation rate and microcolonies across 24–96 h.', limit: 'Skips primary-site biology.', source: '§4.3, 6.1–6.2' },
+  { id: 'confinement', label: 'Confined niche', sites: ['Hindbrain ventricle'], platform: 'Hindbrain ventricle microinjection', why: 'Isolates confinement-associated and perivascular motility inside one defined microenvironment.', limit: 'Anatomically narrow.', source: '§4.3' },
+  { id: 'brain', label: 'Brain infiltration', sites: ['Optic tectum', 'Midbrain–hindbrain boundary'], platform: 'Orthotopic intracranial xenograft', why: 'Reproduces diffuse infiltration, tumour microtubes and perivascular co-option, using brain parenchyma as a native 3D scaffold.', limit: 'Long-term outgrowth still needs mice.', source: '§5.2' },
+  { id: 'metastasis', label: 'Brain metastasis', sites: ['Circulation entry', 'Brain microvessels'], platform: 'Circulation assay in casper larvae', why: 'Transparent larvae show arrest at brain microvessels, blood–brain-barrier contact and extravasation — including fourth-ventricle leptomeningeal models.', limit: 'Early colonisation only.', source: '§6.3' },
+  { id: 'screening', label: 'Drug screening', sites: ['zPDX graft · ambient dosing'], platform: 'zPDX · compound dosed through the water', why: 'Few cells needed and drugs diffuse in from the water: a 5–7 day functional triage before mammalian testing.', limit: 'Not yet a standalone predictor of patient outcome.', source: '§4.8, 8' },
+]
+
+// Figure 1 — the six motility programs cancer cells interconvert between.
+const migrationModes = [
+  { id: 'mesenchymal', name: 'Mesenchymal', tag: 'Elongated · protease-led', detail: 'Integrin adhesions and MMP proteolysis carve a path along ECM fibres.' },
+  { id: 'amoeboid', name: 'Amoeboid', tag: 'Rounded · squeezes through', detail: 'RhoA–ROCK contractility and blebs exploit existing pores — no matrix digestion needed.' },
+  { id: 'collective', name: 'Collective', tag: 'Leader pulls followers', detail: 'Junctions stay intact; leader cells read the gradient and concentrate proteolysis.' },
+  { id: 'hybrid', name: 'Hybrid EMT', tag: 'Partial EMT · clusters', detail: 'Keeps epithelial adhesion while running mesenchymal motility — linked to therapy resistance.' },
+  { id: 'lobopodial', name: 'Lobopodial', tag: 'Confined · pressure-driven', detail: 'Blunt lobopodia driven by intracellular pressure and a nuclear piston in stiff matrix.' },
+  { id: 'perivascular', name: 'Perivascular', tag: 'Tracks along vessels', detail: 'Vessels act as low-resistance conduits and reinforce stem-like, therapy-resistant states.' },
+]
+
+// Figure 2 / Table 1 — throughput against physiological fidelity.
+const assayLadder = [
+  { id: 'scratch', label: 'Scratch 2D', throughput: 95, fidelity: 14 },
+  { id: 'transwell', label: 'Transwell', throughput: 82, fidelity: 27 },
+  { id: 'spheroid', label: '3D spheroid', throughput: 54, fidelity: 50 },
+  { id: 'chip', label: 'Chip', throughput: 38, fidelity: 63 },
+  { id: 'zebrafish', label: 'Zebrafish', throughput: 64, fidelity: 79 },
+  { id: 'mouse', label: 'Mouse', throughput: 11, fidelity: 96 },
 ]
 
 const visualInteractions = {
@@ -349,6 +391,7 @@ function ReviewerMode({ onClose }) {
           <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>I follow questions across molecular, cellular and microbial scales.</p></section>
           <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>I work with cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
           <section><span>PhD direction</span><h3>Mechanistic cell biology and disease</h3><p>I am particularly interested in cancer progression and disease-associated cellular remodelling.</p></section>
+          <section><span>Peer output · manuscript submitted</span><h3>Zebrafish cancer-migration review</h3><p>Co-authored with Udhayakumar Gopal (Huntsman Cancer Institute)—a cross-platform assay decision framework for cancer cell migration and invasion.</p></section>
         </div>
         <div className="reviewer__actions"><a href="/documents/Harini_Madheswaran_CV.docx" download>Download my CV <Arrow /></a><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email me <Arrow /></a></div>
       </article>
@@ -356,20 +399,34 @@ function ReviewerMode({ onClose }) {
   )
 }
 
-function DeferredWdrScene({ step }) {
+// Mount the WebGL canvas once it first comes near the viewport, then keep it
+// mounted. Unmounting on scroll-away tears down the GL context, so scrolling
+// back showed the loading placeholder again while the scene re-initialised.
+// Offscreen we pause the render loop instead, which costs nothing to resume.
+function useLazyScene() {
   const host = useRef(null)
-  const [active, setActive] = useState(false)
+  const [mounted, setMounted] = useState(false)
+  const [inView, setInView] = useState(false)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => setActive(entry.isIntersecting), { rootMargin: '450px 0px' })
+    const observer = new IntersectionObserver(([entry]) => {
+      setInView(entry.isIntersecting)
+      if (entry.isIntersecting) setMounted(true)
+    }, { rootMargin: '450px 0px' })
     if (host.current) observer.observe(host.current)
     return () => observer.disconnect()
   }, [])
 
+  return { host, mounted, paused: !inView }
+}
+
+function DeferredWdrScene({ step }) {
+  const { host, mounted, paused } = useLazyScene()
+
   return (
     <div className="deferred-scene" ref={host}>
-      {active
-        ? <Suspense fallback={<div className="scene-loading"><i /><span>Resolving cell architecture</span></div>}><WdrScene step={step} /></Suspense>
+      {mounted
+        ? <Suspense fallback={<div className="scene-loading"><i /><span>Resolving cell architecture</span></div>}><WdrScene step={step} paused={paused} /></Suspense>
         : <div className="scene-loading"><i /><span>Conceptual cell model waits below</span></div>}
     </div>
   )
@@ -378,7 +435,7 @@ function DeferredWdrScene({ step }) {
 function CurrentChapter({ step, onStep }) {
   return <>
     <section className="prologue section-pad" id="current-question" data-chapter>
-      <div className="chapter-label"><span>Current chapter</span><b>04</b></div>
+      <div className="chapter-label"><span>Current chapter</span><b>05</b></div>
       <div><p className="eyebrow">Where my journey has led</p><h2 data-reveal>What tells a cell <em>where to move?</em></h2><p className="lead">The experiences before this thesis built my experimental range. My current work brings that range into one mechanistic question at the leading edge—where actin reorganises, proteins exchange and cell movement begins.</p></div>
       <div className="prologue__pulse"><i /><span>experience</span><b>question</b></div>
     </section>
@@ -390,7 +447,7 @@ function CurrentChapter({ step, onStep }) {
         <div className="scene-hud scene-hud--bottom"><span>{thesisSteps[step].cue}</span><b>Drag to rotate</b></div>
       </div>
       <div className="thesis__story">
-        <div className="chapter-label"><span>Present investigation</span><b>05</b></div>
+        <div className="chapter-label"><span>Present investigation</span><b>06</b></div>
         <p className="eyebrow">Mechanistic dissection of WDR62 · MS thesis · 24 May 2026–present</p>
         <h2 data-reveal>Can a mitotic scaffold also shape <em>how a cell moves?</em></h2>
         <p>WDR62 is classically linked to spindle organisation and primary microcephaly. In this thesis, I test a less explored, non-mitotic role in actin architecture and protrusion dynamics in U251 and HeLa cells.</p>
@@ -402,6 +459,168 @@ function CurrentChapter({ step, onStep }) {
       </div>
     </section>
   </>
+}
+
+function ModeGlyph({ id }) {
+  const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' }
+  return (
+    <svg className={`mode-glyph mode-glyph--${id}`} viewBox="0 0 64 44" aria-hidden="true">
+      {id === 'mesenchymal' && <g {...common}>
+        <ellipse cx="31" cy="22" rx="17" ry="5.5" transform="rotate(-8 31 22)" />
+        <circle cx="26" cy="21" r="3.2" />
+        <path d="M48 18l9-5M49 22h9M48 26l8 5M14 25l-8 4" />
+      </g>}
+      {id === 'amoeboid' && <g {...common}>
+        <path d="M32 10c7 0 12 5 12 11 0 3 3 3 3 6s-4 6-11 6-9-2-13-2-8-3-8-9 6-12 12-12z" />
+        <circle cx="46" cy="15" r="3.4" /><circle cx="19" cy="31" r="2.8" />
+      </g>}
+      {id === 'collective' && <g {...common}>
+        <circle cx="18" cy="18" r="5.5" /><circle cx="18" cy="30" r="5" /><circle cx="30" cy="24" r="5.5" />
+        <ellipse cx="45" cy="22" rx="8" ry="6" /><path d="M53 20l6-3M53 25l5 3" />
+      </g>}
+      {id === 'hybrid' && <g {...common}>
+        <circle cx="17" cy="19" r="6" /><circle cx="18" cy="31" r="4.5" opacity=".6" />
+        <ellipse cx="36" cy="23" rx="9" ry="5" transform="rotate(-12 36 23)" />
+        <path d="M47 19l8-4M47 26l7 4" /><path d="M24 20h4" strokeDasharray="2 2" />
+      </g>}
+      {id === 'lobopodial' && <g {...common}>
+        <path d="M6 12h52M6 32h52" opacity=".5" />
+        <path d="M18 15h18a7 7 0 0 1 0 14H18z" /><circle cx="25" cy="22" r="3.6" />
+        <path d="M43 22h7" strokeDasharray="2 2" />
+      </g>}
+      {id === 'perivascular' && <g {...common}>
+        <path d="M4 26c14-10 30-10 56 2" opacity=".55" /><path d="M4 33c14-10 30-10 56 2" opacity=".55" />
+        <ellipse cx="24" cy="18" rx="7" ry="4.5" transform="rotate(-17 24 18)" />
+        <ellipse cx="42" cy="17" rx="6" ry="4" transform="rotate(-9 42 17)" />
+      </g>}
+    </svg>
+  )
+}
+
+function MigrationModes() {
+  const [active, setActive] = useState(0)
+  return (
+    <div className="mode-strip">
+      <div className="mode-strip__head"><span>The problem · Figure 1</span><p>Cancer cells switch between six motility programs. Target one, they use another.</p></div>
+      <div className="mode-strip__row" role="tablist" aria-label="Migration modes">
+        {migrationModes.map((mode, index) => (
+          <button key={mode.id} role="tab" aria-selected={active === index} className={active === index ? 'is-active' : ''} onClick={() => setActive(index)}>
+            <ModeGlyph id={mode.id} />
+            <strong>{mode.name}</strong>
+            <small>{mode.tag}</small>
+          </button>
+        ))}
+      </div>
+      <p className="mode-strip__detail" key={migrationModes[active].id}>{migrationModes[active].detail}</p>
+    </div>
+  )
+}
+
+function AssayLadder() {
+  const [hover, setHover] = useState('zebrafish')
+  const current = assayLadder.find(item => item.id === hover) || assayLadder[4]
+  const x = (value) => 52 + (value / 100) * 250
+  const y = (value) => 156 - (value / 100) * 130
+  return (
+    <div className="ladder">
+      <div className="ladder__head">
+        <span>The trade-off · Figure 2</span>
+        <p>Throughput falls as physiological complexity rises. Zebrafish keep both.</p>
+      </div>
+      <svg className="ladder__plot" viewBox="0 0 330 180" role="img" aria-label="Assay platforms plotted by throughput against physiological fidelity">
+        <line x1="52" y1="156" x2="318" y2="156" className="ladder__axis" />
+        <line x1="52" y1="156" x2="52" y2="20" className="ladder__axis" />
+        <text className="ladder__axis-label" x="185" y="174" textAnchor="middle">Throughput →</text>
+        <text className="ladder__axis-label" x="14" y="88" textAnchor="middle" transform="rotate(-90 14 88)">Fidelity →</text>
+        <path className="ladder__trend" d="M302 148C250 140 180 96 96 30" />
+        {assayLadder.map((item) => {
+          const isZebrafish = item.id === 'zebrafish'
+          const isActive = item.id === hover
+          return (
+            <g key={item.id} className={`ladder__point${isZebrafish ? ' is-zebrafish' : ''}${isActive ? ' is-active' : ''}`} onPointerEnter={() => setHover(item.id)}>
+              <circle cx={x(item.throughput)} cy={y(item.fidelity)} r="13" className="ladder__hit" />
+              {isZebrafish && <circle cx={x(item.throughput)} cy={y(item.fidelity)} r="10" className="ladder__halo" />}
+              <circle cx={x(item.throughput)} cy={y(item.fidelity)} r={isZebrafish ? 5.5 : 4} className="ladder__dot" />
+              <text x={x(item.throughput)} y={y(item.fidelity) - 12} textAnchor="middle" className="ladder__tag">{item.label}</text>
+            </g>
+          )
+        })}
+      </svg>
+      <p className="ladder__readout" key={current.id}><b>{current.label}</b> · throughput {current.throughput} · fidelity {current.fidelity}</p>
+    </div>
+  )
+}
+
+function DeferredZebrafishScene({ active }) {
+  const { host, mounted, paused } = useLazyScene()
+
+  return (
+    <div className="deferred-scene" ref={host}>
+      {mounted
+        ? <Suspense fallback={<div className="scene-loading"><i /><span>Resolving larval anatomy</span></div>}><ZebrafishScene active={active} paused={paused} /></Suspense>
+        : <div className="scene-loading"><i /><span>Live larva model loads here</span></div>}
+    </div>
+  )
+}
+
+function PublicationSection() {
+  const [active, setActive] = useState(0)
+  const current = assayGuide[active]
+  return (
+    <section className="publication section-pad" id="publication">
+      <div className="publication__heading" data-chapter>
+        <div className="chapter-label"><span>Peer output</span><b>04</b></div>
+        <div>
+          <p className="eyebrow">Beyond my own experiments</p>
+          <h2 data-reveal>A question I helped answer <em>for the whole field.</em></h2>
+          <p className="lead">A co-authored review that turns a scattered literature into one decision framework: which assay actually answers which question.</p>
+        </div>
+      </div>
+
+      <div className="publication-figures">
+        <MigrationModes />
+        <AssayLadder />
+      </div>
+
+      <div className="publication-lab">
+        <div className="lab-rail">
+          <span className="lab-rail__eyebrow">The answer · pick a question</span>
+          <div className="lab-rail__questions" role="tablist" aria-label="Biological questions">
+            {assayGuide.map((item, index) => <button key={item.id} role="tab" aria-selected={active === index} className={active === index ? 'is-active' : ''} onClick={() => setActive(index)}><span>0{index + 1}</span>{item.label}</button>)}
+          </div>
+          <div className="lab-rail__answer" key={current.id}>
+            <span>Recommended platform</span>
+            <h3>{current.platform}</h3>
+            <p>{current.why}</p>
+            <div className="lab-rail__limit"><span>Where it stops</span><p>{current.limit}</p></div>
+            <small>Review {current.source}</small>
+          </div>
+        </div>
+
+        <div className="publication-stage" data-cursor="drag larva model">
+          <DeferredZebrafishScene active={current.id} />
+          <div className="scene-hud scene-hud--top"><span>Danio rerio larva · 2 dpf</span><b>Drag to rotate</b></div>
+          <div className="publication-stage__sites">
+            <span>Injection site{current.sites.length > 1 ? 's' : ''}</span>
+            <ul>{current.sites.map(site => <li key={site}>{site}</li>)}</ul>
+          </div>
+          <div className="scene-hud scene-hud--bottom"><span>Red · tumour cells &nbsp;/&nbsp; Teal · vasculature</span></div>
+        </div>
+      </div>
+
+      <article className="publication-bar">
+        <div className="publication-bar__title">
+          <span>{zebrafishPaper.status}</span>
+          <h3>{zebrafishPaper.title}</h3>
+        </div>
+        <div className="publication-bar__side">
+          <ul className="publication-card__authors">{zebrafishPaper.authors.map(a => <li key={a.name}><b>{a.name}</b><small>{a.role} · {a.affiliation}</small></li>)}</ul>
+          <div className="tag-row">{zebrafishPaper.keywords.map(k => <span key={k}>{k}</span>)}</div>
+          <a className="publication-card__link" href={zebrafishPaper.report} target="_blank" rel="noreferrer">{zebrafishPaper.reportLabel} <Arrow /></a>
+        </div>
+      </article>
+    </section>
+  )
 }
 
 function App() {
@@ -486,13 +705,13 @@ function App() {
     <div className="site-shell">
       <div className="scroll-progress" style={{ transform: `scaleX(${progress})` }} />
       <aside className="signal-nav" aria-label="Story progress"><span style={{ height: `${progress * 100}%` }} />{[
-        ['Harini', '#chapter-0'], ['Profile', '#about'], ['Journey', '#journey'], ['Evidence', '#projects'], ['Current', '#current-question'], ['Next', '#chapter-5'],
+        ['Harini', '#chapter-0'], ['Profile', '#about'], ['Journey', '#journey'], ['Evidence', '#projects'], ['Paper', '#publication'], ['Current', '#current-question'], ['Next', '#chapter-5'],
       ].map(([item, href]) => <a key={item} href={href} aria-label={item}><i />{item}</a>)}</aside>
 
       <header className={`site-header${headerCompact ? ' is-compact' : ''}${menuOpen ? ' has-menu' : ''}`}>
         <a className="brand" href="#chapter-0"><span className="brand__mark">HM</span><span className="brand__copy"><b>Harini Madheswaran</b><small>Research portfolio · IISER Tirupati</small></span></a>
         <nav id="primary-navigation" className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
-          <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#journey" onClick={() => setMenuOpen(false)}>Journey</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#current-question" onClick={() => setMenuOpen(false)}>Current thesis</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
+          <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#journey" onClick={() => setMenuOpen(false)}>Journey</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#publication" onClick={() => setMenuOpen(false)}>Publication</a><a href="#current-question" onClick={() => setMenuOpen(false)}>Current thesis</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
           <button className="reviewer-trigger" onClick={() => setReviewerOpen(true)}><span>For PhD reviewers</span><Arrow /></button>
           <button className="sound-trigger" onClick={toggleAudio} aria-pressed={audioOn} aria-label={`Ambient audio ${audioOn ? 'on' : 'off'}`} title="Toggle ambient audio"><i /> <span>Sound {audioOn ? 'on' : 'off'}</span></button>
         </nav>
@@ -583,6 +802,8 @@ function App() {
             {visibleProjects.map((project) => <button className={`project-node project-node--${project.number}`} key={project.id} onClick={() => setOpenProject(project)}><ProjectVisual project={project} /><div className="project-node__copy"><div className="project-node__meta"><span>{project.number} · {project.category}{project.period && <small>{project.period}</small>}</span><i>{project.status}</i></div><h3>{project.title}</h3><p>{project.cardCopy || project.question}</p><div className="project-node__methods">{project.methods.slice(0, 2).map(method => <span key={method}>{method}</span>)}</div><b>Open research dossier <Arrow /></b></div></button>)}
           </div>
         </section>
+
+        <PublicationSection />
 
         <CurrentChapter step={thesisStep} onStep={setThesisStep} />
 

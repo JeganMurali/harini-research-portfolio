@@ -80,10 +80,11 @@ function useSceneProfile() {
   return profile
 }
 
-export default function WdrScene({ step }) {
+export default function WdrScene({ step, paused = false }) {
   const { compact, reduceMotion } = useSceneProfile()
+  const frameloop = paused ? 'never' : reduceMotion ? 'demand' : 'always'
   return (
-    <Canvas dpr={compact ? [1, 1.25] : [1, 1.6]} frameloop={reduceMotion ? 'demand' : 'always'} camera={{ position: [0, 0, 8.3], fov: 42 }} gl={{ antialias: !compact, alpha: true, powerPreference: 'high-performance' }}>
+    <Canvas dpr={compact ? [1, 1.25] : [1, 1.6]} frameloop={frameloop} camera={{ position: [0, 0, 8.3], fov: 42 }} gl={{ antialias: !compact, alpha: true, powerPreference: 'high-performance' }}>
       <ambientLight intensity={1.3} /><pointLight position={[4, 5, 5]} color="#9fd8c7" intensity={22} /><pointLight position={[-4, -2, 3]} color="#ef8d72" intensity={13} />
       <WdrCell step={step} compact={compact} reduceMotion={reduceMotion} /><Sparkles count={compact ? 38 : 64} scale={[7, 4.6, 2]} size={1.2} speed={reduceMotion ? 0 : .25} color="#9fd8c7" />
       <OrbitControls enablePan={false} enableZoom={false} minPolarAngle={Math.PI / 2.5} maxPolarAngle={Math.PI / 1.65} autoRotate={!reduceMotion} autoRotateSpeed={.28} />
