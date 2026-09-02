@@ -149,7 +149,6 @@ const zebrafishPaper = {
   status: 'Manuscript submitted for publication',
   summary: 'Turns a fragmented literature into one decision framework: which assay actually answers which question about cancer cell migration.',
   keywords: ['Migration plasticity', 'Danio rerio', 'Glioblastoma', 'Precision oncology'],
-  report: '/documents/projects/zebrafish-cancer-migration-review.docx', reportLabel: 'Read the manuscript',
 }
 
 const assayGuide = [
@@ -461,6 +460,250 @@ function CurrentChapter({ step, onStep }) {
   </>
 }
 
+// Topics a prospective supervisor can match against — the review's own framing of
+// "does this person's work touch mine?". Each maps to a ring in the contact orbit.
+const researchInterests = [
+  { id: 'migration', title: 'Cell migration & cytoskeletal mechanics', line: 'How a scaffold protein and actin architecture decide where a cell moves — the question behind my MS thesis.' },
+  { id: 'invasion', title: 'Cancer invasion & the tumour microenvironment', line: 'How invasive programs and host tissue together shape dissemination and therapy resistance.' },
+  { id: 'imaging', title: 'Live imaging & in vivo mechanistic models', line: 'Making mechanism observable — confocal, FRAP and zebrafish xenograft models.' },
+]
+
+// Chemoattractant sources, in normalised panel coordinates. Shared by the canvas
+// simulation and the HTML labels so the two can never drift apart.
+const GRADIENT_SOURCES = [{ x: .24, y: .22 }, { x: .79, y: .44 }, { x: .4, y: .79 }]
+
+// A migrating cell that polarises and crawls toward whichever gradient you select.
+// Front-biased protrusion, retracted rear, and a trail that is literally the kind of
+// single-cell track the thesis work measures.
+function ChemotaxisField({ active, onSelect }) {
+  const canvasRef = useRef(null)
+  const activeRef = useRef(active)
+  activeRef.current = active
+
+  useEffect(() => {
+    const canvas = canvasRef.current
+    if (!canvas) return undefined
+    const ctx = canvas.getContext('2d')
+    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
+
+    let width = 0
+    let height = 0
+    let scale = 0
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect()
+      const dpr = Math.min(devicePixelRatio, 2)
+      width = rect.width
+      height = rect.height
+      scale = Math.min(width, height)
+      canvas.width = width * dpr
+      canvas.height = height * dpr
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
+    }
+    resize()
+
+    const cell = { x: .5, y: .52 }
+    let heading = 0
+    let speed = 0
+    const trail = []
+    let frame = 0
+    let running = true
+
+    const step = (time) => {
+      const t = time / 1000
+      const target = GRADIENT_SOURCES[activeRef.current]
+      const dx = target.x - cell.x
+      const dy = target.y - cell.y
+      const distance = Math.hypot(dx, dy)
+
+      // Stop short of the source, as a cell arrests once it reaches peak signal.
+      if (distance > .12) {
+        const stepSize = Math.min(.0028, distance * .022)
+        cell.x += (dx / distance) * stepSize
+        cell.y += (dy / distance) * stepSize
+        speed += (1 - speed) * .05
+      } else {
+        speed += (0 - speed) * .06
+      }
+
+      const desired = Math.atan2(dy, dx)
+      const turn = Math.atan2(Math.sin(desired - heading), Math.cos(desired - heading))
+      heading += turn * .07
+
+      if (frame % 3 === 0) {
+        trail.push({ x: cell.x, y: cell.y })
+        if (trail.length > 150) trail.shift()
+      }
+      frame++
+
+      ctx.clearRect(0, 0, width, height)
+
+      // Migration track left behind the cell.
+      if (trail.length > 1) {
+        for (let i = 1; i < trail.length; i++) {
+          const fade = (i / trail.length) * .5
+          ctx.beginPath()
+          ctx.moveTo(trail[i - 1].x * width, trail[i - 1].y * height)
+          ctx.lineTo(trail[i].x * width, trail[i].y * height)
+          ctx.strokeStyle = `rgba(159,216,199,${fade})`
+          ctx.lineWidth = 1.1
+          ctx.stroke()
+        }
+      }
+
+      // Gradient sources: the active one emits expanding signal rings.
+      GRADIENT_SOURCES.forEach((source, index) => {
+        const sx = source.x * width
+        const sy = source.y * height
+        const isActive = index === activeRef.current
+        if (isActive && !reduceMotion) {
+          for (let w = 0; w < 3; w++) {
+            const phase = ((t * .38 + w / 3) % 1)
+            ctx.beginPath()
+            ctx.arc(sx, sy, phase * scale * .3, 0, Math.PI * 2)
+            ctx.strokeStyle = `rgba(239,141,114,${(1 - phase) * .3})`
+            ctx.lineWidth = 1
+            ctx.stroke()
+          }
+        }
+        ctx.beginPath()
+        ctx.arc(sx, sy, isActive ? 7 : 4.5, 0, Math.PI * 2)
+        ctx.fillStyle = isActive ? '#ef8d72' : 'rgba(159,216,199,.4)'
+        ctx.fill()
+      })
+
+      // Cell body: protrusion at the front, retraction at the rear.
+      const cx = cell.x * width
+      const cy = cell.y * height
+      const r0 = scale * .085
+      const stretch = .18 + speed * .3
+      const points = 84
+      ctx.beginPath()
+      for (let i = 0; i <= points; i++) {
+        const angle = (i / points) * Math.PI * 2
+        const align = Math.cos(angle - heading)
+        const front = Math.pow(Math.max(0, align), 2.2) * stretch
+        const rear = Math.pow(Math.max(0, -align), 2) * .13
+        const ripple = reduceMotion ? 0
+          : Math.sin(angle * 3 + t * 1.2) * .05 + Math.sin(angle * 5 - t * .9) * .032 + Math.sin(angle * 7 + t * 1.7) * .018
+        const r = r0 * (1 + ripple + front - rear)
+        const x = cx + Math.cos(angle) * r
+        const y = cy + Math.sin(angle) * r
+        if (i === 0) ctx.moveTo(x, y)
+        else ctx.lineTo(x, y)
+      }
+      ctx.closePath()
+      ctx.fillStyle = 'rgba(159,216,199,.09)'
+      ctx.fill()
+      ctx.strokeStyle = 'rgba(159,216,199,.75)'
+      ctx.lineWidth = 1.3
+      ctx.stroke()
+
+      // Filopodia probing the gradient.
+      if (!reduceMotion) {
+        for (let f = -1; f <= 1; f++) {
+          const angle = heading + f * .42
+          const len = r0 * (1.25 + stretch + Math.sin(t * 2.6 + f) * .16)
+          ctx.beginPath()
+          ctx.moveTo(cx + Math.cos(angle) * r0 * .92, cy + Math.sin(angle) * r0 * .92)
+          ctx.lineTo(cx + Math.cos(angle) * len, cy + Math.sin(angle) * len)
+          ctx.strokeStyle = 'rgba(159,216,199,.42)'
+          ctx.lineWidth = 1
+          ctx.stroke()
+        }
+      }
+
+      // Nucleus, trailing toward the rear as the cell polarises.
+      ctx.beginPath()
+      ctx.ellipse(cx - Math.cos(heading) * r0 * .3, cy - Math.sin(heading) * r0 * .3, r0 * .36, r0 * .3, heading, 0, Math.PI * 2)
+      ctx.fillStyle = 'rgba(239,141,114,.4)'
+      ctx.fill()
+
+      if (running && !reduceMotion) requestAnimationFrame(step)
+    }
+
+    requestAnimationFrame(step)
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting && !running) { running = true; requestAnimationFrame(step) }
+      if (!entry.isIntersecting) running = false
+    })
+    observer.observe(canvas)
+    addEventListener('resize', resize)
+    return () => { running = false; observer.disconnect(); removeEventListener('resize', resize) }
+  }, [])
+
+  return (
+    <div className="contact__field">
+      <canvas ref={canvasRef} className="field__canvas" aria-hidden="true" />
+      <div className="field__sources" role="tablist" aria-label="Research interests">
+        {researchInterests.map((item, index) => (
+          <button key={item.id} type="button" role="tab" aria-selected={active === index}
+            className={`field__source${active === index ? ' is-active' : ''}`}
+            style={{ left: `${GRADIENT_SOURCES[index].x * 100}%`, top: `${GRADIENT_SOURCES[index].y * 100}%` }}
+            onMouseEnter={() => onSelect(index)} onFocus={() => onSelect(index)} onClick={() => onSelect(index)}>
+            {item.title}
+          </button>
+        ))}
+      </div>
+      <div className="field__readout" key={researchInterests[active].id}>
+        <span>Gradient 0{active + 1} / 03</span>
+        <p>{researchInterests[active].line}</p>
+      </div>
+      <p className="field__hint">Hover a signal · the cell commits to a direction</p>
+    </div>
+  )
+}
+
+function ContactCard() {
+  const email = 'harini_20221059@students.iisertirupati.ac.in'
+  const [copied, setCopied] = useState(false)
+
+  const copyEmail = async () => {
+    try {
+      await navigator.clipboard.writeText(email)
+    } catch {
+      // Clipboard API needs a secure context; fall back to a temporary selection.
+      const field = document.createElement('textarea')
+      field.value = email
+      field.setAttribute('readonly', '')
+      field.style.position = 'fixed'
+      field.style.opacity = '0'
+      document.body.appendChild(field)
+      field.select()
+      document.execCommand('copy')
+      document.body.removeChild(field)
+    }
+    setCopied(true)
+  }
+
+  useEffect(() => {
+    if (!copied) return undefined
+    const timer = setTimeout(() => setCopied(false), 2000)
+    return () => clearTimeout(timer)
+  }, [copied])
+
+  const subject = encodeURIComponent('PhD enquiry — Harini Madheswaran')
+
+  return (
+    <div className="contact-card">
+      <div className="contact-card__email">
+        <span>Email · the fastest way to reach me</span>
+        <a href={`mailto:${email}?subject=${subject}`}>{email}</a>
+        <button type="button" onClick={copyEmail} aria-live="polite">{copied ? 'Copied ✓' : 'Copy'}</button>
+      </div>
+      <div className="contact-card__links">
+        <a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a>
+        <a href="/documents/Harini_Madheswaran_CV.docx" download>Download my CV <Arrow /></a>
+      </div>
+      <dl className="contact-card__meta">
+        <div><dt>Based in</dt><dd>Tirupati, India · IST (UTC+5:30)</dd></div>
+        <div><dt>Phone</dt><dd>+91 94430 82449</dd></div>
+        <div><dt>Status</dt><dd>BS–MS at IISER Tirupati, completing 2027</dd></div>
+      </dl>
+    </div>
+  )
+}
+
 function ModeGlyph({ id }) {
   const common = { fill: 'none', stroke: 'currentColor', strokeWidth: 1.4, strokeLinecap: 'round', strokeLinejoin: 'round' }
   return (
@@ -616,7 +859,6 @@ function PublicationSection() {
         <div className="publication-bar__side">
           <ul className="publication-card__authors">{zebrafishPaper.authors.map(a => <li key={a.name}><b>{a.name}</b><small>{a.role} · {a.affiliation}</small></li>)}</ul>
           <div className="tag-row">{zebrafishPaper.keywords.map(k => <span key={k}>{k}</span>)}</div>
-          <a className="publication-card__link" href={zebrafishPaper.report} target="_blank" rel="noreferrer">{zebrafishPaper.reportLabel} <Arrow /></a>
         </div>
       </article>
     </section>
@@ -633,6 +875,7 @@ function App() {
   const [audioOn, setAudioOn] = useState(false)
   const [activeCapability, setActiveCapability] = useState(0)
   const [headerCompact, setHeaderCompact] = useState(false)
+  const [interest, setInterest] = useState(0)
   const audio = useRef(null)
   const hero = useRef(null)
 
@@ -808,8 +1051,13 @@ function App() {
         <CurrentChapter step={thesisStep} onStep={setThesisStep} />
 
         <section className="contact" id="chapter-5">
-          <div className="contact__field"><span>?</span><div className="contact__rings"><i /><i /><i /></div><p>The next question is still open.</p></div>
-          <div className="contact__copy"><p className="eyebrow">Available for PhD conversations</p><h2 data-reveal>Let’s ask what biology reveals next.</h2><p>I am interested in doctoral research exploring how signalling, cellular architecture and tissue environments are remodelled during cancer progression and other disease states.</p><div className="contact__links"><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email me <Arrow /></a><a href="https://linkedin.com/in/harini3101051926" target="_blank" rel="noreferrer">LinkedIn <Arrow /></a><a href="/documents/Harini_Madheswaran_CV.docx" download>Download my CV <Arrow /></a></div><div className="contact__details"><span>+91 94430 82449</span><span>Tirupati, Andhra Pradesh, India</span></div></div>
+          <ChemotaxisField active={interest} onSelect={setInterest} />
+          <div className="contact__copy">
+            <p className="eyebrow">Available for PhD conversations</p>
+            <h2 data-reveal>Let’s ask what biology reveals next.</h2>
+            <p>I am interested in doctoral research exploring how signalling, cellular architecture and tissue environments are remodelled during cancer progression and other disease states.</p>
+            <ContactCard />
+          </div>
         </section>
       </main>
       <footer><span>Harini Madheswaran · Research Portfolio</span><span>Biology · Chemistry · 2026</span></footer>
