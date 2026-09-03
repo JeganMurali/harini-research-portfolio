@@ -17,7 +17,7 @@ const projects = [
     learning: 'A strong molecular tool needs controls that distinguish real complementation from expression, localisation and background fluorescence.',
     next: 'Use the validated platform to test candidate WDR62-mediated PDPK1–AKT1 proximity under defined cellular conditions.',
     methods: ['Molecular cloning', 'HEK293T culture', 'Split-GFP', 'Fluorescence imaging'],
-    image: '/assets/wdr62-split-gfp.jpg', secondary: '/assets/wdr62-gel.jpg', visual: 'split',
+    visual: 'split',
     report: '/documents/projects/WDR62-split-GFP-report.docx', reportLabel: 'Download project report',
     status: 'Semester project · platform validation',
     period: 'January–March 2026', supervisor: 'Dr Pavithra Lakshminarasimhan Chavali',
@@ -140,6 +140,11 @@ const capabilities = [
   },
 ]
 
+// The manuscript is unpublished and under review, so the figure-derived visuals
+// (migration modes, assay ladder, 3D larva and the assay decision tool) are kept in
+// the codebase but not rendered. Flip to true to restore them once it is published.
+const SHOW_PUBLICATION_DETAIL = false
+
 const zebrafishPaper = {
   title: 'Visualizing Cancer Cell Migration and Invasion in Real Time: Mechanistic Principles, Assay Platforms, and Zebrafish In Vivo Models',
   authors: [
@@ -147,7 +152,7 @@ const zebrafishPaper = {
     { name: 'Harini Madheswaran', role: 'Co-author', affiliation: 'Department of Biology, IISER Tirupati' },
   ],
   status: 'Manuscript submitted for publication',
-  summary: 'Turns a fragmented literature into one decision framework: which assay actually answers which question about cancer cell migration.',
+  summary: 'A co-authored review on how cancer cells migrate and invade, and how the choice of experimental model shapes what can be observed. It compares two-dimensional, three-dimensional and whole-animal approaches to studying cell motility. It also considers where zebrafish models fit within that landscape. The manuscript is currently under review.',
   keywords: ['Migration plasticity', 'Danio rerio', 'Glioblastoma', 'Precision oncology'],
 }
 
@@ -820,36 +825,40 @@ function PublicationSection() {
         </div>
       </div>
 
-      <div className="publication-figures">
-        <MigrationModes />
-        <AssayLadder />
-      </div>
+      {SHOW_PUBLICATION_DETAIL && (
+        <>
+          <div className="publication-figures">
+            <MigrationModes />
+            <AssayLadder />
+          </div>
 
-      <div className="publication-lab">
-        <div className="lab-rail">
-          <span className="lab-rail__eyebrow">The answer · pick a question</span>
-          <div className="lab-rail__questions" role="tablist" aria-label="Biological questions">
-            {assayGuide.map((item, index) => <button key={item.id} role="tab" aria-selected={active === index} className={active === index ? 'is-active' : ''} onClick={() => setActive(index)}><span>0{index + 1}</span>{item.label}</button>)}
-          </div>
-          <div className="lab-rail__answer" key={current.id}>
-            <span>Recommended platform</span>
-            <h3>{current.platform}</h3>
-            <p>{current.why}</p>
-            <div className="lab-rail__limit"><span>Where it stops</span><p>{current.limit}</p></div>
-            <small>Review {current.source}</small>
-          </div>
-        </div>
+          <div className="publication-lab">
+            <div className="lab-rail">
+              <span className="lab-rail__eyebrow">The answer · pick a question</span>
+              <div className="lab-rail__questions" role="tablist" aria-label="Biological questions">
+                {assayGuide.map((item, index) => <button key={item.id} role="tab" aria-selected={active === index} className={active === index ? 'is-active' : ''} onClick={() => setActive(index)}><span>0{index + 1}</span>{item.label}</button>)}
+              </div>
+              <div className="lab-rail__answer" key={current.id}>
+                <span>Recommended platform</span>
+                <h3>{current.platform}</h3>
+                <p>{current.why}</p>
+                <div className="lab-rail__limit"><span>Where it stops</span><p>{current.limit}</p></div>
+                <small>Review {current.source}</small>
+              </div>
+            </div>
 
-        <div className="publication-stage" data-cursor="drag larva model">
-          <DeferredZebrafishScene active={current.id} />
-          <div className="scene-hud scene-hud--top"><span>Danio rerio larva · 2 dpf</span><b>Drag to rotate</b></div>
-          <div className="publication-stage__sites">
-            <span>Injection site{current.sites.length > 1 ? 's' : ''}</span>
-            <ul>{current.sites.map(site => <li key={site}>{site}</li>)}</ul>
+            <div className="publication-stage" data-cursor="drag larva model">
+              <DeferredZebrafishScene active={current.id} />
+              <div className="scene-hud scene-hud--top"><span>Danio rerio larva · 2 dpf</span><b>Drag to rotate</b></div>
+              <div className="publication-stage__sites">
+                <span>Injection site{current.sites.length > 1 ? 's' : ''}</span>
+                <ul>{current.sites.map(site => <li key={site}>{site}</li>)}</ul>
+              </div>
+              <div className="scene-hud scene-hud--bottom"><span>Red · tumour cells &nbsp;/&nbsp; Teal · vasculature</span></div>
+            </div>
           </div>
-          <div className="scene-hud scene-hud--bottom"><span>Red · tumour cells &nbsp;/&nbsp; Teal · vasculature</span></div>
-        </div>
-      </div>
+        </>
+      )}
 
       <article className="publication-bar">
         <div className="publication-bar__title">
@@ -858,7 +867,7 @@ function PublicationSection() {
         </div>
         <div className="publication-bar__side">
           <ul className="publication-card__authors">{zebrafishPaper.authors.map(a => <li key={a.name}><b>{a.name}</b><small>{a.role} · {a.affiliation}</small></li>)}</ul>
-          <div className="tag-row">{zebrafishPaper.keywords.map(k => <span key={k}>{k}</span>)}</div>
+          <p className="publication-bar__context">{zebrafishPaper.summary}</p>
         </div>
       </article>
     </section>
