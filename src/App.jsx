@@ -1,6 +1,11 @@
 import { lazy, Suspense, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react'
-import gsap from 'gsap'
-import { ScrollTrigger } from 'gsap/ScrollTrigger'
+import { gsap, ease, dur } from './motion'
+import Intro, { shouldPlayIntro } from './Intro'
+import Journey from './Journey'
+import Hero from './Hero'
+import Profile from './Profile'
+import ReviewerBrief from './ReviewerBrief'
+import { useDialogA11y } from './useDialogA11y'
 
 const WdrScene = lazy(() => import('./WdrScene'))
 const ZebrafishScene = lazy(() => import('./ZebrafishScene'))
@@ -108,36 +113,6 @@ const thesisSteps = [
 
 const filters = ['All', 'Wet lab', 'Computational', 'Literature', 'Industry', 'Presentation']
 
-const capabilities = [
-  {
-    id: 'cell', number: '01', title: 'Cell biology & imaging',
-    statement: 'I study cellular organisation as a dynamic process—not only as a fixed image.',
-    detail: 'Mammalian cell culture, confocal microscopy, phalloidin staining and FRAP support questions about localisation, actin architecture and molecular turnover.',
-    evidence: 'WDR62 MS thesis · U251 and HeLa cells',
-    methods: ['Mammalian cell culture', 'Confocal microscopy', 'FRAP', 'Perturbation'],
-  },
-  {
-    id: 'molecular', number: '02', title: 'Molecular experimentation',
-    statement: 'I build experimental systems that make otherwise invisible molecular relationships measurable.',
-    detail: 'Construct design, cloning and validation connect molecular logic to a testable cellular readout.',
-    evidence: 'Semester project · molecular cloning',
-    methods: ['PCR', 'Cloning', 'Transfection', 'Fluorescence controls'],
-  },
-  {
-    id: 'microbial', number: '03', title: 'Microbiology & chemistry',
-    statement: 'I follow biological activity from a microbial community into an experimental assay.',
-    detail: 'Culture, extraction, antimicrobial screening and chromatographic preparation reveal how conditions alter biological activity.',
-    evidence: 'CSIR-NIO coral microbiome · Biocon API R&D',
-    methods: ['Aseptic culture', 'Extraction', 'Disc diffusion', 'TLC / HPLC'],
-  },
-  {
-    id: 'computational', number: '04', title: 'Computational reasoning',
-    statement: 'I use sequence, topology and structure as converging lines of evidence.',
-    detail: 'Comparative analysis connects evolutionary conservation with predicted molecular form and experimentally useful hypotheses.',
-    evidence: 'TMEM135 comparative biology project',
-    methods: ['Alignment', 'Phylogeny', 'Topology', 'Structure prediction'],
-  },
-]
 
 // The manuscript is unpublished and under review, so the figure-derived visuals
 // (migration modes, assay ladder, 3D larva and the assay decision tool) are kept in
@@ -197,56 +172,6 @@ function Arrow({ down = false }) {
   return <span aria-hidden="true">{down ? '↓' : '↗'}</span>
 }
 
-function CellField() {
-  const ref = useRef(null)
-  useEffect(() => {
-    const canvas = ref.current
-    const ctx = canvas.getContext('2d')
-    const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches
-    let frame = 0
-    let active = true
-    let points = []
-    const resize = () => {
-      const dpr = Math.min(devicePixelRatio, 2)
-      canvas.width = innerWidth * dpr
-      canvas.height = innerHeight * dpr
-      canvas.style.width = `${innerWidth}px`
-      canvas.style.height = `${innerHeight}px`
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
-      points = Array.from({ length: innerWidth < 700 ? 30 : 72 }, () => ({
-        x: Math.random() * innerWidth, y: Math.random() * innerHeight,
-        r: Math.random() * 1.6 + .3, speed: Math.random() * .18 + .05,
-        phase: Math.random() * Math.PI * 2,
-      }))
-    }
-    const draw = (time = 0) => {
-      ctx.clearRect(0, 0, innerWidth, innerHeight)
-      points.forEach((p, i) => {
-        p.y -= p.speed
-        if (p.y < -8) p.y = innerHeight + 8
-        const pulse = .35 + Math.sin(time * .001 + p.phase) * .25
-        ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2)
-        ctx.fillStyle = i % 7 === 0 ? `rgba(239,141,114,${pulse})` : `rgba(159,216,199,${pulse})`
-        ctx.fill()
-      })
-      frame = reduceMotion || !active ? 0 : requestAnimationFrame(draw)
-    }
-    const observer = new IntersectionObserver(([entry]) => {
-      active = entry.isIntersecting && !document.hidden
-      if (!active && frame) { cancelAnimationFrame(frame); frame = 0 }
-      if (active && !frame) draw()
-    })
-    const onVisibility = () => {
-      active = !document.hidden && canvas.getBoundingClientRect().bottom > 0
-      if (!active && frame) { cancelAnimationFrame(frame); frame = 0 }
-      if (active && !frame) draw()
-    }
-    resize(); draw(); observer.observe(canvas); addEventListener('resize', resize); document.addEventListener('visibilitychange', onVisibility)
-    return () => { cancelAnimationFrame(frame); observer.disconnect(); removeEventListener('resize', resize); document.removeEventListener('visibilitychange', onVisibility) }
-  }, [])
-  return <canvas className="cell-field" ref={ref} aria-hidden="true" />
-}
-
 function MiniVisual({ type, activity }) {
   if (type === 'split') return <div className="mini split-mini"><i /><i /><b /></div>
   if (type === 'coral') return <div className="mini coral-mini">{[1,2,3,4,5,6,7].map(i => <i key={i} />)}<b /></div>
@@ -292,50 +217,6 @@ function EvidenceViewer({ project }) {
   )
 }
 
-function useDialogA11y(onClose) {
-  const dialogRef = useRef(null)
-  const closeRef = useRef(onClose)
-  closeRef.current = onClose
-
-  useEffect(() => {
-    const previousFocus = document.activeElement
-    const previousOverflow = document.body.style.overflow
-    const dialog = dialogRef.current
-    document.body.style.overflow = 'hidden'
-    dialog?.focus()
-
-    const onKeyDown = (event) => {
-      if (event.key === 'Escape') {
-        event.preventDefault()
-        closeRef.current()
-        return
-      }
-      if (event.key !== 'Tab' || !dialog) return
-      const focusable = [...dialog.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')]
-      if (!focusable.length) {
-        event.preventDefault()
-        dialog.focus()
-        return
-      }
-      const first = focusable[0]
-      const last = focusable[focusable.length - 1]
-      if (event.shiftKey && document.activeElement === first) {
-        event.preventDefault(); last.focus()
-      } else if (!event.shiftKey && document.activeElement === last) {
-        event.preventDefault(); first.focus()
-      }
-    }
-
-    addEventListener('keydown', onKeyDown)
-    return () => {
-      document.body.style.overflow = previousOverflow
-      removeEventListener('keydown', onKeyDown)
-      if (previousFocus instanceof HTMLElement) previousFocus.focus()
-    }
-  }, [])
-
-  return dialogRef
-}
 
 function Dossier({ project, onClose }) {
   const [chapter, setChapter] = useState('story')
@@ -382,25 +263,6 @@ function Dossier({ project, onClose }) {
   )
 }
 
-function ReviewerMode({ onClose }) {
-  const dialogRef = useDialogA11y(onClose)
-  return (
-    <div className="reviewer-backdrop" onMouseDown={onClose}>
-      <article ref={dialogRef} className="reviewer" role="dialog" aria-modal="true" aria-label="PhD reviewer quick view" tabIndex={-1} onMouseDown={(e) => e.stopPropagation()}>
-        <button onClick={onClose} aria-label="Close reviewer mode">×</button>
-        <p className="eyebrow">90-second view</p><h2>PhD reviewer mode</h2>
-        <div className="reviewer__grid">
-          <section><span>Current thesis · 24 May 2026–present</span><h3>Mechanistic dissection of WDR62</h3><p>Non-mitotic roles in actin architecture and protrusion dynamics.</p></section>
-          <section><span>Research range</span><h3>Wet lab · computation · microbiology</h3><p>I follow questions across molecular, cellular and microbial scales.</p></section>
-          <section><span>Core methods</span><h3>Build · perturb · image · compare</h3><p>I work with cloning, mammalian cells, confocal/FRAP, microbial screening and bioinformatics.</p></section>
-          <section><span>PhD direction</span><h3>Mechanistic cell biology and disease</h3><p>I am particularly interested in cancer progression and disease-associated cellular remodelling.</p></section>
-          <section><span>Peer output · manuscript submitted</span><h3>Zebrafish cancer-migration review</h3><p>Co-authored with Udhayakumar Gopal (Huntsman Cancer Institute)—a cross-platform assay decision framework for cancer cell migration and invasion.</p></section>
-        </div>
-        <div className="reviewer__actions"><a href="/documents/Harini_Madheswaran_CV.docx" download>Download my CV <Arrow /></a><a href="mailto:harini_20221059@students.iisertirupati.ac.in">Email me <Arrow /></a></div>
-      </article>
-    </div>
-  )
-}
 
 // Mount the WebGL canvas once it first comes near the viewport, then keep it
 // mounted. Unmounting on scroll-away tears down the GL context, so scrolling
@@ -658,7 +520,7 @@ function ChemotaxisField({ active, onSelect }) {
   )
 }
 
-function ContactCard() {
+function ContactCard({ onReviewer }) {
   const email = 'harini_20221059@students.iisertirupati.ac.in'
   const [copied, setCopied] = useState(false)
 
@@ -690,6 +552,9 @@ function ContactCard() {
 
   return (
     <div className="contact-card">
+      <button className="contact-card__brief" onClick={onReviewer}>
+        <span><small>Reviewing my application?</small>Read the 90-second brief</span><Arrow />
+      </button>
       <div className="contact-card__email">
         <span>Email · the fastest way to reach me</span>
         <a href={`mailto:${email}?subject=${subject}`}>{email}</a>
@@ -874,18 +739,17 @@ function PublicationSection() {
 }
 
 function App() {
-  const [menuOpen, setMenuOpen] = useState(false)
   const [thesisStep, setThesisStep] = useState(0)
   const [filter, setFilter] = useState('All')
   const [openProject, setOpenProject] = useState(null)
   const [reviewerOpen, setReviewerOpen] = useState(false)
-  const [progress, setProgress] = useState(0)
+  const [introPlaying, setIntroPlaying] = useState(shouldPlayIntro)
+  const [heroGo, setHeroGo] = useState(() => !introPlaying)
+  const [heroOrigin, setHeroOrigin] = useState(null)
   const [audioOn, setAudioOn] = useState(false)
-  const [activeCapability, setActiveCapability] = useState(0)
-  const [headerCompact, setHeaderCompact] = useState(false)
   const [interest, setInterest] = useState(0)
   const audio = useRef(null)
-  const hero = useRef(null)
+  const progressRail = useRef(null)
 
   const visibleProjects = useMemo(() => projects.filter(p => filter === 'All' || p.category === filter), [filter])
 
@@ -904,16 +768,14 @@ function App() {
   }, [])
 
   useEffect(() => {
-    gsap.registerPlugin(ScrollTrigger)
     const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches
     if (reduce) return undefined
     const context = gsap.context(() => {
       gsap.to('.hero__art-base', { scale: 1.17, yPercent: 4, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: .8 } })
       gsap.to('.hero__art-focus', { scale: 1.25, xPercent: 2.5, yPercent: -2, ease: 'none', scrollTrigger: { trigger: '.hero', start: 'top top', end: 'bottom top', scrub: 1.1 } })
-      gsap.fromTo('.worlds__image', { scale: 1.14 }, { scale: 1, ease: 'none', scrollTrigger: { trigger: '.research-worlds', start: 'top bottom', end: 'bottom top', scrub: 1 } })
-      gsap.from('.hero__copy > *', { y: 38, opacity: 0, duration: .9, stagger: .09, ease: 'power3.out' })
-      gsap.utils.toArray('[data-chapter]').forEach((node) => gsap.from(node, { y: 70, opacity: 0, duration: 1, scrollTrigger: { trigger: node, start: 'top 82%' } }))
-      gsap.utils.toArray('[data-reveal]').forEach((node) => gsap.fromTo(node, { clipPath: 'inset(0 0 100% 0)', y: 35 }, { clipPath: 'inset(0 0 0% 0)', y: 0, duration: 1.05, ease: 'power3.out', scrollTrigger: { trigger: node, start: 'top 84%' } }))
+      // One entrance pattern site-wide (Premium): rise 24px + fade, scale 98%→100%.
+      gsap.utils.toArray('[data-chapter]').forEach((node) => gsap.from(node, { y: 24, opacity: 0, scale: .98, duration: dur.slow, ease: ease.enter, scrollTrigger: { trigger: node, start: 'top 84%' } }))
+      gsap.utils.toArray('[data-reveal]').forEach((node) => gsap.fromTo(node, { clipPath: 'inset(0 0 100% 0)', y: 20 }, { clipPath: 'inset(0 0 -12% 0)', y: 0, duration: dur.dramatic, ease: ease.enter, scrollTrigger: { trigger: node, start: 'top 86%' } }))
     }, document.body)
     return () => context.revert()
   }, [])
@@ -921,25 +783,21 @@ function App() {
   useEffect(() => {
     const onScroll = () => {
       const max = document.documentElement.scrollHeight - innerHeight
-      setProgress(max ? scrollY / max : 0)
-      setHeaderCompact(current => current ? scrollY > 72 : scrollY > 140)
+      // Written straight to the DOM: a React re-render of the whole page on every scroll frame is jank.
+      if (progressRail.current) progressRail.current.style.height = `${(max ? scrollY / max : 0) * 100}%`
     }
     onScroll(); addEventListener('scroll', onScroll, { passive: true })
     return () => removeEventListener('scroll', onScroll)
   }, [])
 
+  // Decorative CSS animations keep restyling (and repainting) the page every frame even when they are
+  // off-screen. Pause each section's animations while it is out of view; resume as it scrolls in.
   useEffect(() => {
-    const closeMenu = (event) => event.key === 'Escape' && setMenuOpen(false)
-    addEventListener('keydown', closeMenu)
-    return () => removeEventListener('keydown', closeMenu)
+    const blocks = document.querySelectorAll('main > section:not(.hero), main > div, footer')
+    const io = new IntersectionObserver((entries) => entries.forEach(e => e.target.classList.toggle('is-offscreen', !e.isIntersecting)), { rootMargin: '200px 0px' })
+    blocks.forEach(b => io.observe(b))
+    return () => io.disconnect()
   }, [])
-
-  const moveHero = (event) => {
-    if (!hero.current) return
-    const rect = hero.current.getBoundingClientRect()
-    hero.current.style.setProperty('--px', `${((event.clientX - rect.left) / rect.width - .5) * 18}px`)
-    hero.current.style.setProperty('--py', `${((event.clientY - rect.top) / rect.height - .5) * 12}px`)
-  }
 
   const toggleAudio = async () => {
     if (audioOn) {
@@ -954,94 +812,17 @@ function App() {
 
   return (
     <div className="site-shell">
-      <div className="scroll-progress" style={{ transform: `scaleX(${progress})` }} />
-      <aside className="signal-nav" aria-label="Story progress"><span style={{ height: `${progress * 100}%` }} />{[
+      {introPlaying && <Intro onHandoff={(origin) => { setHeroOrigin(origin); setHeroGo(true) }} onDone={() => { setHeroGo(true); setIntroPlaying(false) }} />}
+      <aside className="signal-nav" aria-label="Story progress"><span ref={progressRail} />{[
         ['Harini', '#chapter-0'], ['Profile', '#about'], ['Journey', '#journey'], ['Evidence', '#projects'], ['Paper', '#publication'], ['Current', '#current-question'], ['Next', '#chapter-5'],
       ].map(([item, href]) => <a key={item} href={href} aria-label={item}><i />{item}</a>)}</aside>
 
-      <header className={`site-header${headerCompact ? ' is-compact' : ''}${menuOpen ? ' has-menu' : ''}`}>
-        <a className="brand" href="#chapter-0"><span className="brand__mark">HM</span><span className="brand__copy"><b>Harini Madheswaran</b><small>Research portfolio · IISER Tirupati</small></span></a>
-        <nav id="primary-navigation" className={menuOpen ? 'site-nav is-open' : 'site-nav'}>
-          <a href="#about" onClick={() => setMenuOpen(false)}>About</a><a href="#journey" onClick={() => setMenuOpen(false)}>Journey</a><a href="#projects" onClick={() => setMenuOpen(false)}>Research</a><a href="#methods" onClick={() => setMenuOpen(false)}>Methods</a><a href="#publication" onClick={() => setMenuOpen(false)}>Publication</a><a href="#current-question" onClick={() => setMenuOpen(false)}>Current thesis</a><a href="/documents/Harini_Madheswaran_CV.docx" download>CV</a>
-          <button className="reviewer-trigger" onClick={() => setReviewerOpen(true)}><span>For PhD reviewers</span><Arrow /></button>
-          <button className="sound-trigger" onClick={toggleAudio} aria-pressed={audioOn} aria-label={`Ambient audio ${audioOn ? 'on' : 'off'}`} title="Toggle ambient audio"><i /> <span>Sound {audioOn ? 'on' : 'off'}</span></button>
-        </nav>
-        <button className="menu-button" onClick={() => setMenuOpen(!menuOpen)} aria-label={menuOpen ? 'Close navigation' : 'Open navigation'} aria-expanded={menuOpen} aria-controls="primary-navigation"><span /><span /><b>Menu</b></button>
-      </header>
-
       <main>
-        <section className="hero" id="chapter-0" ref={hero} onPointerMove={moveHero}>
-          <div className="hero__art hero__art-base" />
-          <div className="hero__art hero__art-focus" />
-          <CellField />
-          <div className="hero__signals" aria-hidden="true">{[1,2,3,4].map(i => <i key={i} />)}</div>
-          <div className="hero__veil" /><div className="hero__copy">
-            <p className="eyebrow">BS–MS researcher · Biology major · Chemistry minor</p>
-            <h1>Harini <em>Madheswaran.</em></h1>
-            <h2 className="hero__role">Experimental biologist investigating how cells organise, communicate and adapt.</h2>
-            <p>I combine cell biology, molecular experimentation, microbiology and computational analysis to turn mechanistic questions into testable experiments.</p>
-            <blockquote>Inside every cell, structure becomes decision.</blockquote>
-            <div className="hero__actions"><a href="#about" className="button button--light">Meet me <Arrow down /></a><a href="#journey" className="button button--ghost">Follow my journey <Arrow /></a></div>
-          </div>
-          <div className="hero__readout"><span>IISER Tirupati · Cell biology</span><span>Wet lab · Computation · Scientific synthesis</span><button onClick={() => setReviewerOpen(true)}>90-second reviewer view <Arrow /></button></div>
-        </section>
+        <Hero go={heroGo} origin={heroOrigin} onReviewer={() => setReviewerOpen(true)} />
 
-        <section className="researcher-profile section-pad" id="about" data-chapter>
-          <div className="profile-intro">
-            <div className="chapter-label"><span>My profile</span><b>01</b></div>
-            <div>
-              <p className="eyebrow">Who I am · What I bring</p>
-              <h2 data-reveal>I move between biological scales, while keeping the question <em>experimentally grounded.</em></h2>
-              <p className="profile-lead">I am a BS–MS student at IISER Tirupati, majoring in Biology with a Chemistry minor. My work spans mammalian cells, molecular signalling, microbial systems and computational biology. Across each setting, I look for the experiment that can turn an observation into a mechanism.</p>
-            </div>
-          </div>
-          <div className="profile-facts" aria-label="My research summary">
-            <article><span>Current focus</span><strong>WDR62, actin architecture and cell movement</strong></article>
-            <article><span>Research range</span><strong>Cellular · molecular · microbial · computational</strong></article>
-            <article><span>PhD direction</span><strong>Mechanistic cell biology and disease</strong><small>Cancer progression and disease-associated cellular remodelling</small></article>
-          </div>
-          <div className="capability-lab" id="methods">
-            <nav aria-label="Research capabilities">
-              {capabilities.map((capability, index) => <button key={capability.id} className={activeCapability === index ? 'is-active' : ''} onClick={() => setActiveCapability(index)}><span>{capability.number}</span><strong>{capability.title}</strong><i aria-hidden="true">↗</i></button>)}
-            </nav>
-            <article className="capability-readout" key={capabilities[activeCapability].id}>
-              <p className="eyebrow">What I can do</p>
-              <h3>{capabilities[activeCapability].statement}</h3>
-              <p>{capabilities[activeCapability].detail}</p>
-              <div className="capability-evidence"><span>Demonstrated in</span><strong>{capabilities[activeCapability].evidence}</strong></div>
-              <div className="capability-tags">{capabilities[activeCapability].methods.map(method => <span key={method}>{method}</span>)}</div>
-            </article>
-          </div>
-        </section>
+        <Profile />
 
-        <section className="trajectory section-pad" id="journey">
-          <div className="trajectory__heading" data-chapter>
-            <div className="chapter-label"><span>Research journey</span><b>02</b></div>
-            <div>
-              <p className="eyebrow">From foundation to an independent question</p>
-              <h2 data-reveal>One journey. <em>A continuously sharper way of asking why.</em></h2>
-              <p className="lead">My path moves from interdisciplinary training to industrial discipline, ecological microbiology and mechanistic cell biology.</p>
-            </div>
-          </div>
-          <div className="living-line" aria-label="My research journey timeline">
-            <article data-chapter><i aria-hidden="true" /><span>2022–May 2024 · Tirupati</span><h3>IISER foundation</h3><p>My BS–MS training in Biology and Chemistry led into a winter study of bacterial signalling pathways.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>3 Jun–31 Jul 2024 · Bengaluru</span><h3>Biocon</h3><p>At Biocon, I learned how analytical discipline, reproducibility and SOP-led workflows shape industrial API R&amp;D.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>19 May–25 Jul 2025 · Goa</span><h3>CSIR-NIO</h3><p>At CSIR-NIO, I explored antimicrobial activity in coral-associated microbial communities.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>Aug 2025–Mar 2026 · Tirupati</span><h3>Two toolkits converge</h3><p>I brought computational work on TMEM135 together with hands-on molecular experimentation.</p></article>
-            <article className="is-current" data-chapter><i aria-hidden="true" /><span>24 May 2026–Present</span><h3>WDR62 MS thesis</h3><p>I now ask how a mitotic scaffold influences actin architecture, cell movement and disease-relevant remodelling.</p></article>
-          </div>
-        </section>
-
-        <section className="research-worlds" id="journey-stories">
-          <div className="worlds__sticky"><picture className="worlds__picture"><source media="(max-width: 780px)" srcSet="/assets/research-worlds-mobile.webp" type="image/webp" /><source srcSet="/assets/research-worlds-v2.webp" type="image/webp" /><img className="worlds__image" src="/assets/research-worlds-v2.png" alt="A cinematic biological landscape representing my movement through academic, industrial and marine research environments" loading="lazy" decoding="async" /></picture><div className="worlds__shade" /></div>
-          <div className="worlds__intro"><p className="eyebrow">My formation · four environments</p><h2 data-reveal>Every place changed <em>how I ask questions.</em></h2><p>From an interdisciplinary foundation to industrial discipline, marine microbiology and mechanistic cell biology—this is the path that shaped my research practice.</p></div>
-          <div className="world-chapters">
-            <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3 data-reveal>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
-            <article data-chapter><span>02 · Biocon, Bengaluru · 3 June–31 July 2024</span><h3 data-reveal>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>Industrial training · TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
-            <article data-chapter><span>03 · CSIR-NIO, Goa · 19 May–25 July 2025</span><h3 data-reveal>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Research internship · Marine microbiology · Screening · Extraction · Optimisation</small></article>
-            <article data-chapter><span>04 · IISER Tirupati · 2025–present</span><h3 data-reveal>A broader toolkit met a sharper question.</h3><p>Semester projects sharpened my computational and molecular toolkit before I began the current mechanistic study of WDR62 and cell movement.</p><small>TMEM135 with Dr Prasanna Katti · Aug–Nov 2025 · MS thesis · 24 May 2026–present</small></article>
-          </div>
-        </section>
+        <Journey />
 
         <div className="research-verbs" aria-hidden="true"><div><span>observe</span><i>·</i><span>build</span><i>·</i><span>perturb</span><i>·</i><span>measure</span><i>·</i><span>compare</span><i>·</i><span>interpret</span><i>·</i><span>observe</span><i>·</i><span>build</span><i>·</i><span>perturb</span><i>·</i><span>measure</span></div></div>
 
@@ -1064,13 +845,20 @@ function App() {
             <p className="eyebrow">Available for PhD conversations</p>
             <h2 data-reveal>Let’s ask what biology reveals next.</h2>
             <p>I am interested in doctoral research exploring how signalling, cellular architecture and tissue environments are remodelled during cancer progression and other disease states.</p>
-            <ContactCard />
+            <ContactCard onReviewer={() => setReviewerOpen(true)} />
           </div>
         </section>
       </main>
       <footer><span>Harini Madheswaran · Research Portfolio</span><span>Biology · Chemistry · 2026</span></footer>
       {openProject && <Dossier project={openProject} onClose={() => setOpenProject(null)} />}
-      {reviewerOpen && <ReviewerMode onClose={() => setReviewerOpen(false)} />}
+      {reviewerOpen && (
+        <ReviewerBrief
+          onClose={() => setReviewerOpen(false)}
+          onOpenProject={(id) => setOpenProject(projects.find(p => p.id === id))}
+          onGo={(href) => document.querySelector(href)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })}
+          projects={projects} thesisSteps={thesisSteps} interests={researchInterests} paper={zebrafishPaper}
+        />
+      )}
     </div>
   )
 }
