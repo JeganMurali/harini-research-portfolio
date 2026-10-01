@@ -24,3 +24,8 @@ Thumbs.db
 /project report- biocon.docx
 /NeuroNexus_Ideathon_Presentation (1).pdf
 /Harini Madheswaran - Research Portfolio v2 (standalone).html
+
+# Local agent skills (installed via `npx skills add`)
+.agents/
+.claude/
+skills-lock.json
