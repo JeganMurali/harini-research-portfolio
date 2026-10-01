@@ -8,18 +8,17 @@ const ZebrafishScene = lazy(() => import('./ZebrafishScene'))
 const projects = [
   {
     id: 'split-gfp', number: '01', category: 'Wet lab', world: 'Signals',
-    title: 'Making molecular proximity visible', short: 'WDR62 · PDPK1–AKT1 · Split-GFP',
-    question: 'Can WDR62 bring two signalling proteins close enough to restore a fluorescent signal?',
-    why: 'Spatial proximity can reveal how a scaffold coordinates signalling inside a living cell. Split-GFP turns that otherwise invisible relationship into a readable cellular event.',
-    approach: ['Designed split-GFP fusion constructs', 'PCR, digestion, ligation and transformation', 'Screened colonies and prepared sequencing samples', 'Transfected HEK293T cells and established fluorescence controls'],
-    contribution: 'I worked across the complete validation chain—from construct logic to mammalian-cell fluorescence controls.',
-    evidence: 'The report documents cloning checks, gel validation and split-GFP fluorescence controls.',
-    learning: 'A strong molecular tool needs controls that distinguish real complementation from expression, localisation and background fluorescence.',
-    next: 'Use the validated platform to test candidate WDR62-mediated PDPK1–AKT1 proximity under defined cellular conditions.',
-    methods: ['Molecular cloning', 'HEK293T culture', 'Split-GFP', 'Fluorescence imaging'],
+    title: 'Making molecular proximity visible', short: 'Molecular cloning · Semester project',
+    question: 'Can two signalling proteins be brought close enough to give a readable fluorescent signal in cells?',
+    why: 'Spatial proximity can reveal how a scaffold coordinates signalling inside a living cell.',
+    approach: ['Designed fusion constructs', 'Cloned and screened colonies', 'Tested fluorescence in HEK293T cells'],
+    contribution: 'I worked from construct design through to fluorescence controls in mammalian cells.',
+    evidence: 'Cloning checks, gel validation and fluorescence controls.',
+    learning: 'A strong molecular tool needs controls that separate a real signal from background.',
+    next: 'Apply these controls to test candidate protein interactions under defined cellular conditions.',
+    methods: ['Molecular cloning', 'HEK293T culture', 'Fluorescence imaging'],
     visual: 'split',
-    report: '/documents/projects/WDR62-split-GFP-report.docx', reportLabel: 'Download project report',
-    status: 'Semester project · platform validation',
+    status: 'Semester project',
     period: 'January–March 2026', supervisor: 'Dr Pavithra Lakshminarasimhan Chavali',
   },
   {
@@ -120,8 +119,8 @@ const capabilities = [
   {
     id: 'molecular', number: '02', title: 'Molecular experimentation',
     statement: 'I build experimental systems that make otherwise invisible molecular relationships measurable.',
-    detail: 'Construct design, cloning, validation and fluorescence controls connect molecular logic to a testable cellular readout.',
-    evidence: 'WDR62–PDPK1–AKT1 split-GFP platform',
+    detail: 'Construct design, cloning and validation connect molecular logic to a testable cellular readout.',
+    evidence: 'Semester project · molecular cloning',
     methods: ['PCR', 'Cloning', 'Transfection', 'Fluorescence controls'],
   },
   {
@@ -367,7 +366,7 @@ function Dossier({ project, onClose }) {
               <div className="tag-row">{project.methods.map(method => <span key={method}>{method}</span>)}</div>
             </>}
             {chapter === 'evidence' && <>
-              <p className="eyebrow">Report evidence · contextualised</p><h2>Inspect the trace</h2>
+              <p className="eyebrow">Evidence · contextualised</p><h2>Inspect the trace</h2>
               <EvidenceViewer project={project} />
               <div className="evidence-caption"><p>{project.evidence}</p>{project.report && <a href={project.report} target="_blank" rel="noreferrer">{project.reportLabel} <Arrow /></a>}</div>
             </>}
@@ -1028,7 +1027,7 @@ function App() {
             <article data-chapter><i aria-hidden="true" /><span>2022–May 2024 · Tirupati</span><h3>IISER foundation</h3><p>My BS–MS training in Biology and Chemistry led into a winter study of bacterial signalling pathways.</p></article>
             <article data-chapter><i aria-hidden="true" /><span>3 Jun–31 Jul 2024 · Bengaluru</span><h3>Biocon</h3><p>At Biocon, I learned how analytical discipline, reproducibility and SOP-led workflows shape industrial API R&amp;D.</p></article>
             <article data-chapter><i aria-hidden="true" /><span>19 May–25 Jul 2025 · Goa</span><h3>CSIR-NIO</h3><p>At CSIR-NIO, I explored antimicrobial activity in coral-associated microbial communities.</p></article>
-            <article data-chapter><i aria-hidden="true" /><span>Aug 2025–Mar 2026 · Tirupati</span><h3>Two toolkits converge</h3><p>I brought computational work on TMEM135 together with molecular experimentation using split-GFP.</p></article>
+            <article data-chapter><i aria-hidden="true" /><span>Aug 2025–Mar 2026 · Tirupati</span><h3>Two toolkits converge</h3><p>I brought computational work on TMEM135 together with hands-on molecular experimentation.</p></article>
             <article className="is-current" data-chapter><i aria-hidden="true" /><span>24 May 2026–Present</span><h3>WDR62 MS thesis</h3><p>I now ask how a mitotic scaffold influences actin architecture, cell movement and disease-relevant remodelling.</p></article>
           </div>
         </section>
@@ -1040,7 +1039,7 @@ function App() {
             <article data-chapter><span>01 · IISER Tirupati · Foundation</span><h3 data-reveal>Learning to think across disciplines.</h3><p>Biology gave me the living system; chemistry taught me to reason through interactions, conditions and evidence. IISER made asking questions the centre of learning.</p><small>Biology major · Chemistry minor · BS–MS</small></article>
             <article data-chapter><span>02 · Biocon, Bengaluru · 3 June–31 July 2024</span><h3 data-reveal>Precision became part of the experiment.</h3><p>API R&amp;D showed me that reproducibility is built through analytical discipline, documentation, safety and process control—not technique alone.</p><small>Industrial training · TLC · Preparative HPLC · Karl Fischer · SOP-led workflows</small></article>
             <article data-chapter><span>03 · CSIR-NIO, Goa · 19 May–25 July 2025</span><h3 data-reveal>Biology expanded into a community.</h3><p>Working with coral-associated microbes taught me to follow activity through culture conditions, extraction and antimicrobial screening while respecting ecological context.</p><small>Research internship · Marine microbiology · Screening · Extraction · Optimisation</small></article>
-            <article data-chapter><span>04 · IISER Tirupati · 2025–present</span><h3 data-reveal>A broader toolkit met a sharper question.</h3><p>Two semester projects sharpened my computational and molecular toolkit before I began the current mechanistic study of WDR62 and cell movement.</p><small>TMEM135 with Dr Prasanna Katti · Aug–Nov 2025 · Split-GFP with Dr Pavithra Chavali · Jan–Mar 2026 · MS thesis · 24 May 2026–present</small></article>
+            <article data-chapter><span>04 · IISER Tirupati · 2025–present</span><h3 data-reveal>A broader toolkit met a sharper question.</h3><p>Semester projects sharpened my computational and molecular toolkit before I began the current mechanistic study of WDR62 and cell movement.</p><small>TMEM135 with Dr Prasanna Katti · Aug–Nov 2025 · MS thesis · 24 May 2026–present</small></article>
           </div>
         </section>
 
