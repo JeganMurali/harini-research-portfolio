@@ -37,7 +37,8 @@ function WdrCell({ step, compact, reduceMotion }) {
     <group ref={group}>
       <mesh scale={[2.75, 1.78, .68]}>
         <sphereGeometry args={[1, compact ? 36 : 48, compact ? 24 : 32]} />
-        <meshPhysicalMaterial color="#1a7780" transparent opacity={.1} roughness={.2} transmission={.2} depthWrite={false} side={THREE.DoubleSide} />
+        {/* No transmission: it renders the scene twice per frame and forms a texture feedback loop on mobile GPUs. */}
+        <meshPhysicalMaterial color="#1a7780" transparent opacity={.1} roughness={.2} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
       <Float speed={1.1} rotationIntensity={.08} floatIntensity={.12}>
         <mesh position={[-.3, .05, .15]} scale={[1.05, 1.05, .5]}>

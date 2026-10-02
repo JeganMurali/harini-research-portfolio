@@ -6,7 +6,7 @@ import { capabilities } from './content'
 
 
 // Where each specimen cell sits (desktop), as % of the stage: a gentle wave, so no two are in line.
-const CAP_POS = [{ x: 27, y: 30 }, { x: 38, y: 68 }, { x: 51, y: 30 }, { x: 62, y: 68 }]
+const CAP_POS = [{ x: 27, y: 22 }, { x: 38, y: 58 }, { x: 51, y: 22 }, { x: 62, y: 58 }]
 
 // Growth-clock ("grow") targets per act, and how long each act takes to play.
 const ACTS = [{ to: 1, dur: 1.7 }, { to: 2, dur: 1.7 }, { to: 4, dur: 2.8 }, { to: 5, dur: 1.5 }]
@@ -59,7 +59,8 @@ export default function Profile() {
         [1.22, q('.profile__affiliation')], [1.42, q('[data-anchor="bio"]')], [1.48, q('[data-anchor="chem"]')],
         [1.3, q('.profile__abstract-label')], [1.38, q('.profile__lead')],
         [2.05, q('.profile__now')],
-        ...network.current.capTimes.map((t, i) => [t + .25, q(`.specimen--${i}`)]),
+        // Clamped inside act 3 (which ends at grow 4): a later cell must not wait for act 4 to get its label.
+        ...network.current.capTimes.map((t, i) => [Math.min(t + .25, 3.95), q(`.specimen--${i}`)]),
         [3.5, q('.profile__readout')], [4.3, q('.profile__next')],
       ]
       if (still) { el.classList.add('is-built'); a.redraw() }
@@ -109,10 +110,12 @@ export default function Profile() {
       qd.tween = gsap.to(a.state, { grow: qd.target, duration: Math.max(.4, duration), ease: 'power1.inOut' })
       if (act >= 2) gsap.to(a.state, { world: 1, duration: 2.4, delay: .6, ease: ease.signature })
     }
+    const brk = el.querySelector('.profile__break')
+    const breakTrigger = ScrollTrigger.create({ trigger: brk, start: 'top 72%', once: true, onEnter: () => brk.classList.add('is-on') })
     const triggers = [
       ['.profile__head', 'top 82%'], ['.profile__identity', 'top 78%'], ['.profile__stage', 'top 70%'], ['.profile__next', 'top 88%'],
     ].map(([sel, start], i) => ScrollTrigger.create({ trigger: el.querySelector(sel), start, once: true, onEnter: () => advance(i) }))
-    return () => { gsap.ticker.remove(tick); triggers.forEach(t => t.kill()); queue.current.tween?.kill() }
+    return () => { gsap.ticker.remove(tick); breakTrigger.kill(); triggers.forEach(t => t.kill()); queue.current.tween?.kill() }
   }, [])
 
   // Selecting a cell: it steps forward and starts its story; the others dim back (staging). A signal ripples out.
@@ -178,13 +181,20 @@ export default function Profile() {
           </div>
         </div>
 
-        <div className="profile__stage" id="methods" data-anchor="stage">
+        {/* A chapter break: a pause between who she is and what she can do, so the next part announces itself. */}
+        <div className="profile__break" id="methods">
+          <i className="profile__break-rule" aria-hidden="true" />
+          <p className="profile__break-label"><i aria-hidden="true" /><span>My profile · What I can do</span></p>
+          <h3 className="profile__break-title">Four ways I work at the bench <em>and the screen.</em></h3>
+          <p className="profile__break-sub">Cellular · Molecular · Microbial · Computational — select a cell to see each one.</p>
+        </div>
+
+        <div className="profile__stage" data-anchor="stage">
           <div className="profile__now pf" data-anchor="now">
             <span>Now · current focus</span>
             <strong>WDR62, actin architecture and cell movement</strong>
           </div>
 
-          <p className="profile__range" aria-label="Research range">Research range · Cellular · Molecular · Microbial · Computational</p>
 
           <div className="profile__specimens">
           {capabilities.map((c, i) => (

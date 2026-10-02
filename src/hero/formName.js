@@ -27,7 +27,10 @@ export async function sampleName({ host, lines }) {
     o.fillText(line.textContent, box.left - hostRect.left - x0, baseline - y0)
     const data = o.getImageData(0, 0, w, h).data
     const pts = []
-    for (let y = 0; y < h; y += 2) for (let x = 0; x < w; x += 2) if (data[(y * w + x) * 4 + 3] > 140) pts.push([x0 + x, y0 + y])
+    // Small type (phones) has thin strokes: a 2px grid aliases them into gaps, so sample every pixel there
+    // and let the random cap thin the set evenly instead.
+    const step = parseFloat(style.fontSize) < 72 ? 1 : 2
+    for (let y = 0; y < h; y += step) for (let x = 0; x < w; x += step) if (data[(y * w + x) * 4 + 3] > 140) pts.push([x0 + x, y0 + y])
     targets.push({ pts, color: style.color, cx: box.left - hostRect.left + box.width / 2, cy: box.top - hostRect.top + box.height / 2 })
   }
   return { targets }
@@ -58,6 +61,10 @@ function strokeBuckets(ctx, buckets) {
 export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
   const dpr = Math.min(devicePixelRatio || 1, 2)
   const mobile = innerWidth < 780
+  // The dissolve is a hover effect: on touch screens a finger would only hide the name, so it is off there.
+  const hoverable = matchMedia('(hover: hover) and (pointer: fine)').matches
+  // On small screens long streaks read as hair; keep grains short and fine.
+  const streak = mobile ? 8 : 20, flightWidth = mobile ? .85 : 1.25
   const canvas = document.createElement('canvas')
   canvas.className = 'hero__particles'
   host.appendChild(canvas)
@@ -80,7 +87,7 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
   let box = { x: 0, y: 0, w: 0, h: 0 }
 
   function build(s, fromOrigin) {
-    const cap = mobile ? 1500 : 3400
+    const cap = mobile ? 2600 : 3400
     const all = s.targets.reduce((n, t) => n + t.pts.length, 0)
     const keep = Math.min(1, cap / Math.max(1, all))
     const list = []
@@ -127,6 +134,7 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
   const total = .45 + .08 + 1.35 + .35
   // Flight time runs on a GSAP clock, so it stays in step with every other timeline (and lag smoothing).
   const clock = gsap.to({}, { duration: total + .1, ease: 'none' })
+  const landCall = gsap.delayedCall(total - .55, () => { if (!landed) { landed = true; onLand?.() } })
   let mode = 'flight', landed = false, frame = 0, running = true, fade = 1
 
   // Rest-mode interaction state.
@@ -138,8 +146,8 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
   function drawFlight(t) {
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.clearRect(0, 0, W, H)
-    const mint = bucket('m', FLIGHT, .55, 1.25, 'lighter')
-    const land = colors.map((c, ci) => bucket('l' + ci, c, .95 * fade, 1.5, 'source-over'))
+    const mint = bucket('m', FLIGHT, mobile ? .5 : .55, flightWidth, 'lighter')
+    const land = colors.map((c, ci) => bucket('l' + ci, c, .95 * fade, mobile ? 1.1 : 1.5, 'source-over'))
     for (let i = 0; i < N; i++) {
       const k = Math.min(1, Math.max(0, (t - delay[i]) / dur[i]))
       if (k <= 0) continue
@@ -151,7 +159,7 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
       let lx = px[i], ly = py[i]
       // Motion blur: a streak back toward the last position, capped so fast grains read as light, not lines.
       const sl = Math.hypot(x - lx, y - ly)
-      if (sl > 20) { lx = x - (x - lx) * 20 / sl; ly = y - (y - ly) * 20 / sl }
+      if (sl > streak) { lx = x - (x - lx) * streak / sl; ly = y - (y - ly) * streak / sl }
       if (sl < .6) { lx = x - .6; ly = y }
       push(k < .8 ? mint : land[col[i]], lx, ly, x, y)
       px[i] = x; py[i] = y
@@ -179,6 +187,8 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
     const key = `${holePx}|${mx}|${my}`
     if (key === lastVars) return
     lastVars = key
+    // The mask exists only while dissolving: a resting zero-size mask can hide the name in some browsers.
+    h1.classList.toggle('is-dissolving', holePx !== '0' && parseFloat(holePx) > .2)
     h1.style.setProperty('--hole', `${holePx}px`)
     h1.style.setProperty('--mx', `${mx}px`)
     h1.style.setProperty('--my', `${my}px`)
@@ -200,7 +210,8 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
     ctx.setTransform(dpr, 0, 0, dpr, -box.x * dpr, -box.y * dpr)
     ctx.clearRect(box.x, box.y, box.w, box.h)
     const near = cursor.inside && cursor.x > box.x && cursor.x < box.x + box.w && cursor.y > box.y && cursor.y < box.y + box.h
-    hole += ((near ? 1 : 0) - hole) * (near ? .14 : .06)
+    hole += ((near ? 1 : 0) - hole) * (near ? .14 : .085)
+    if (!near && hole < .02) hole = 0
     if (hole > .003 || energy > .05) {
       setMask()
       energy = 0
@@ -247,7 +258,6 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
   function tick() {
     const t = clock.time()
     if (mode === 'flight') {
-      if (!landed && t > total - .55) { landed = true; onLand?.() }
       if (t > total - .45) fade = Math.max(0, 1 - (t - (total - .45)) / .45)
       drawFlight(t)
       if (t >= total) {
@@ -264,6 +274,7 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
 
   return {
     pointer(clientX, clientY) {
+      if (!hoverable) return
       const r = host.getBoundingClientRect()
       cursor.x = clientX - r.left; cursor.y = clientY - r.top; cursor.inside = true
     },
@@ -275,6 +286,6 @@ export function formName({ host, h1, sample, origin, spread = 46, onLand }) {
       build(next, false)
       if (mode === 'rest') fitToBox(); else size()
     },
-    destroy() { running = false; clock.kill(); cancelAnimationFrame(frame); canvas.remove(); h1.classList.remove('is-grains'); h1.style.removeProperty('--hole') },
+    destroy() { running = false; clock.kill(); landCall.kill(); cancelAnimationFrame(frame); canvas.remove(); h1.classList.remove('is-grains', 'is-dissolving'); h1.style.removeProperty('--hole') },
   }
 }

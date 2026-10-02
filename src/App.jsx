@@ -746,9 +746,7 @@ function App() {
   const [introPlaying, setIntroPlaying] = useState(shouldPlayIntro)
   const [heroGo, setHeroGo] = useState(() => !introPlaying)
   const [heroOrigin, setHeroOrigin] = useState(null)
-  const [audioOn, setAudioOn] = useState(false)
   const [interest, setInterest] = useState(0)
-  const audio = useRef(null)
   const progressRail = useRef(null)
 
   const visibleProjects = useMemo(() => projects.filter(p => filter === 'All' || p.category === filter), [filter])
@@ -762,6 +760,19 @@ function App() {
       history.replaceState(null, '', `${location.pathname}${location.search}`)
       scrollTo({ top: 0, left: 0, behavior: 'instant' })
       requestAnimationFrame(() => scrollTo({ top: 0, left: 0, behavior: 'instant' }))
+    }
+    // A shared link (e.g. /#projects): the browser tried to jump before React rendered the target, so jump
+    // once fonts and layout have settled.
+    else if (location.hash) {
+      const hash = location.hash
+      const jump = () => document.querySelector(hash)?.scrollIntoView({ block: 'start', behavior: 'instant' })
+      // Content above the target can still settle after the first jump (profile build, late images), so
+      // correct once more shortly after — but only if the reader hasn't scrolled in the meantime.
+      Promise.resolve(document.fonts?.ready).then(() => requestAnimationFrame(() => requestAnimationFrame(() => {
+        jump()
+        const landed = scrollY
+        setTimeout(() => { if (Math.abs(scrollY - landed) < 2) jump() }, 700)
+      })))
     }
 
     return () => { history.scrollRestoration = previousRestoration }
@@ -799,17 +810,6 @@ function App() {
     return () => io.disconnect()
   }, [])
 
-  const toggleAudio = async () => {
-    if (audioOn) {
-      await audio.current?.close(); audio.current = null; setAudioOn(false); return
-    }
-    const AudioCtx = window.AudioContext || window.webkitAudioContext
-    const ctx = new AudioCtx(); const gain = ctx.createGain(); gain.gain.value = .018; gain.connect(ctx.destination)
-    const oscA = ctx.createOscillator(); const oscB = ctx.createOscillator(); const filter = ctx.createBiquadFilter()
-    oscA.type = 'sine'; oscB.type = 'triangle'; oscA.frequency.value = 52; oscB.frequency.value = 78; filter.type = 'lowpass'; filter.frequency.value = 180
-    oscA.connect(filter); oscB.connect(filter); filter.connect(gain); oscA.start(); oscB.start(); audio.current = ctx; setAudioOn(true)
-  }
-
   return (
     <div className="site-shell">
       {introPlaying && <Intro onHandoff={(origin) => { setHeroOrigin(origin); setHeroGo(true) }} onDone={() => { setHeroGo(true); setIntroPlaying(false) }} />}
@@ -822,7 +822,11 @@ function App() {
 
         <Profile />
 
-        <Journey />
+        <Journey
+          projects={projects}
+          onOpenProject={(id) => setOpenProject(projects.find(p => p.id === id))}
+          onGo={(href) => document.querySelector(href)?.scrollIntoView({ behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'start' })}
+        />
 
         <div className="research-verbs" aria-hidden="true"><div><span>observe</span><i>·</i><span>build</span><i>·</i><span>perturb</span><i>·</i><span>measure</span><i>·</i><span>compare</span><i>·</i><span>interpret</span><i>·</i><span>observe</span><i>·</i><span>build</span><i>·</i><span>perturb</span><i>·</i><span>measure</span></div></div>
 

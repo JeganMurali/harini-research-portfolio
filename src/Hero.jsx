@@ -120,12 +120,17 @@ export default function Hero({ go, origin, onReviewer }) {
   const [cycling, setCycling] = useState(false)
   const [hint, setHint] = useState(null)
 
-  const size = () => { const r = root.current.getBoundingClientRect(); return { width: r.width, height: r.height, left: r.left, top: r.top } }
+  const size = () => {
+    const r = root.current.getBoundingClientRect()
+    const copy = root.current.querySelector('.hero__copy .eyebrow')
+    return { width: r.width, height: r.height, left: r.left, top: r.top, copyTop: copy ? copy.getBoundingClientRect().top - r.top : undefined }
+  }
+  const spotFor = ({ width, height, copyTop }) => heroSpot(width, height, copyTop)
 
   // Put the world into its formed state (used after the entrance, on resize, and for reduced motion).
   const settle = (s) => {
-    const { width, height } = size()
-    const spot = heroSpot(width, height)
+    const { width, height, copyTop } = size()
+    const spot = heroSpot(width, height, copyTop)
     if (s.state.interactive) Object.assign(s.state.anchor, spot)
     Object.assign(s.state.cellB, { x: spot.x, y: spot.y, r: spot.r, a: 1 })
     setHint(h => ({ ...h, ...hintAt(spot, width) }))
@@ -142,7 +147,7 @@ export default function Hero({ go, origin, onReviewer }) {
     tissue.current = s
     if (import.meta.env.DEV) window.__tissue = s
     setMode('live')
-    { const { width, height } = size(); setHint(h => ({ ...h, ...hintAt(heroSpot(width, height), width) })) }
+    { const sz = size(); setHint(h => ({ ...h, ...hintAt(spotFor(sz), sz.width) })) }
     if (still) { settle(s); s.redraw() }
 
     const io = new IntersectionObserver(([entry]) => {
@@ -180,8 +185,10 @@ export default function Hero({ go, origin, onReviewer }) {
     const q = gsap.utils.selector(el)
     if (prefersReducedMotion()) return undefined
     const s = tissue.current
-    const { width, height, left, top } = size()
-    const spot = heroSpot(width, height)
+    const sz = size()
+    const { width, height, left, top } = sz
+    const spot = spotFor(sz)
+    const small = width < 780
 
     const ctx = gsap.context(() => {
       const tl = gsap.timeline({
@@ -249,8 +256,13 @@ export default function Hero({ go, origin, onReviewer }) {
           .then((ready) => { nameField.current = formName({ host: el, h1: h1.current, sample: ready, origin: from, spread: cell.r * .6, onLand: () => gsap.to(h1.current, { opacity: 1, duration: .45, ease: ease.signature }) }) })
           .catch(() => gsap.set(h1.current, { opacity: 1 }))
       }, null, .6)
-      tl.set(q('.hero__copy .eyebrow'), { opacity: 1 }, .35)
-      tl.add(scramble(q('.hero__copy .eyebrow')[0], .8), .35)
+      // The name is guaranteed to arrive with the timeline, even if the grain drawing was paused (e.g. the
+      // visitor scrolled during the hand-off) — opacity 1 is idempotent if the grains already revealed it.
+      tl.to(h1.current, { opacity: 1, duration: .45, ease: ease.signature }, 3.1)
+      // On phones the grains fly through the eyebrow line, so it decodes once they have passed.
+      const eyebrowAt = small ? 2.1 : .35
+      tl.set(q('.hero__copy .eyebrow'), { opacity: 1 }, eyebrowAt)
+      tl.add(scramble(q('.hero__copy .eyebrow')[0], .8), eyebrowAt)
       tl.to(chrome, { opacity: 1, duration: dur.slow, stagger: stagger.standard, ease: ease.signature }, 2.5)
       tl.to(q('.hero__role, .hero__actions'), { opacity: 1, y: 0, duration: dur.slow, stagger: stagger.dramatic }, 1.9)
         .call(() => setCycling(true), null, 3.3)

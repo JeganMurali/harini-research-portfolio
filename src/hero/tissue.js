@@ -449,7 +449,12 @@ export function createTissue(canvas, { still = false } = {}) {
 }
 
 // Where the hero cell lives once the world has formed.
-export function heroSpot(width, height) {
-  if (width < 780) return { x: width * .63, y: height * .27, r: width * .29 }
+// On phones the text sits at the bottom; the cell takes the free space above it (copyTop = top of the text).
+export function heroSpot(width, height, copyTop) {
+  if (width < 780) {
+    const room = (copyTop || height * .46) - 56
+    const r = Math.min(width * .3, room * .4)
+    return { x: width * .6, y: 30 + room / 2, r }
+  }
   return { x: width * .7, y: height * .5, r: Math.min(height * .3, width * .19) }
 }
