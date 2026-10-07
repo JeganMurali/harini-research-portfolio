@@ -8,10 +8,10 @@ const LON = [72.4, 81], LAT = [11.2, 17.2], MAP_W = 600, MAP_H = 520
 const proj = (lon, lat) => ({ x: (lon - LON[0]) / (LON[1] - LON[0]) * MAP_W, y: (LAT[1] - lat) / (LAT[1] - LAT[0]) * MAP_H })
 const CITIES = {
   // label: placed on the side of each city that no route leg passes through.
-  // The emblem sits on the city; the label goes on the side no route passes through.
-  tirupati: { name: 'Tirupati', region: 'Andhra Pradesh', org: 'IISER Tirupati', ...proj(79.42, 13.63), label: [46, 4, 'start'], Mark: IiserMark },
-  bengaluru: { name: 'Bengaluru', region: 'Karnataka', org: 'Biocon', ...proj(77.59, 12.97), label: [0, 54, 'middle'], Mark: BioconMark },
-  goa: { name: 'Goa', region: 'Dona Paula', org: 'CSIR-NIO', ...proj(73.83, 15.49), label: [0, -64, 'middle'], Mark: CsirMark },
+  // The emblem sits on the city; its label goes on the side no route passes through.
+  tirupati: { name: 'Tirupati', region: 'Andhra Pradesh', org: 'IISER Tirupati', ...proj(79.42, 13.63), side: 'right', Mark: IiserMark },
+  bengaluru: { name: 'Bengaluru', region: 'Karnataka', org: 'Biocon', ...proj(77.59, 12.97), side: 'below', Mark: BioconMark },
+  goa: { name: 'Goa', region: 'Dona Paula', org: 'CSIR-NIO', ...proj(73.83, 15.49), side: 'above', Mark: CsirMark },
 }
 
 const THESIS_SUPERVISOR = 'Dr. Pavithra Lakshminarasimhan Chavali'
@@ -137,7 +137,8 @@ export default function Journey({ projects = [], onOpenProject, onGo }) {
 
   // The emblems assemble once, when the map first comes into view.
   useEffect(() => {
-    const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setSeen(true); io.disconnect() } }, { threshold: .25 })
+    // Any record saying 'visible' counts: a shared #link can batch a stale 'not visible' record first.
+    const io = new IntersectionObserver((entries) => { if (entries.some(e => e.isIntersecting)) { setSeen(true); io.disconnect() } }, { threshold: .25 })
     io.observe(mapRef.current)
     return () => io.disconnect()
   }, [])
@@ -258,13 +259,6 @@ export default function Journey({ projects = [], onOpenProject, onGo }) {
               {LEGS.map((d, i) => <path key={`g${i}`} className="jmap__leg-glow" d={d} ref={el => { glows.current[i] = el }} />)}
               {LEGS.map((d, i) => <path key={`l${i}`} className="jmap__leg" d={d} ref={el => { legs.current[i] = el }} />)}
 
-              {Object.entries(CITIES).map(([key, c]) => (
-                <g key={key} className={`jmap__city${current.city === key ? ' is-here' : ''}`} transform={`translate(${c.x} ${c.y})`}>
-                  <text className="jmap__name" x={c.label[0]} y={c.label[1]} textAnchor={c.label[2]}>{c.name}</text>
-                  <text className="jmap__region" x={c.label[0]} y={c.label[1] + 15} textAnchor={c.label[2]}>{c.region}</text>
-                </g>
-              ))}
-
               <g ref={cell} className="jmap__cell">
                 <circle r="16" className="jmap__cell-glow" />
                 <circle r="9" fill="url(#jcell-fill)" className="jmap__cell-body" />
@@ -274,12 +268,14 @@ export default function Journey({ projects = [], onOpenProject, onGo }) {
 
             {Object.entries(CITIES).map(([key, c]) => {
               const Mark = c.Mark
+              const here = current.city === key
               return (
-                <button key={key} className={`jbadge jbadge--${key}${current.city === key ? ' is-here' : ''}`}
-                  style={{ left: `${(c.x / MAP_W) * 100}%`, top: `${(c.y / MAP_H) * 100}%` }}
-                  onClick={() => goTo(cityStop(key))} aria-label={`${c.org}, ${c.name}`}>
-                  <span className="jbadge__ring"><Mark /></span>
-                </button>
+                <div key={key} className={`jplace jplace--${key}${here ? ' is-here' : ''}`} style={{ left: `${(c.x / MAP_W) * 100}%`, top: `${(c.y / MAP_H) * 100}%` }}>
+                  <button className={`jbadge jbadge--${key}${here ? ' is-here' : ''}`} onClick={() => goTo(cityStop(key))} aria-label={`${c.org}, ${c.name}`}>
+                    <span className="jbadge__ring"><Mark /></span>
+                  </button>
+                  <span className={`jplace__label jplace__label--${c.side}`} aria-hidden="true"><b>{c.name}</b><small>{c.region}</small></span>
+                </div>
               )
             })}
           </div>

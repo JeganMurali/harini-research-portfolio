@@ -841,15 +841,16 @@ html.is-intro { overflow: hidden; }
 .jmap__cell circle { transform-box: fill-box; transform-origin: center; }
 
 /* Emblems are landmarks: they assemble once (when the map is first seen), then the current one leads. */
-.jbadge { --d: 0s; position: absolute; width: clamp(46px, 3.8vw, 58px); aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 1px solid rgba(159,216,199,.34); border-radius: 50%; background: #04191b; transform: translate(-50%, -50%); cursor: pointer; transition: transform .6s var(--ease-signature), opacity .6s var(--ease-signature), border-color .4s var(--ease-signature), box-shadow .6s var(--ease-signature); }
+.jbadge { --d: 0s; position: absolute; left: 0; top: 0; width: var(--b); aspect-ratio: 1; display: grid; place-items: center; padding: 0; border: 1px solid rgba(159,216,199,.34); border-radius: 50%; background: #04191b; transform: translate(-50%, -50%); cursor: pointer; transition: transform .6s var(--ease-signature), opacity .6s var(--ease-signature), border-color .4s var(--ease-signature), box-shadow .6s var(--ease-signature); }
 .jbadge--bengaluru { --d: .15s; } .jbadge--goa { --d: .3s; }
 .jbadge.is-here { transform: translate(-50%, -50%) scale(1.32); border-color: var(--mint); box-shadow: 0 0 0 6px rgba(127,211,193,.08), 0 0 26px rgba(127,211,193,.3); }
 .jbadge .jbadge__ring { opacity: .6; transition: opacity .5s var(--ease-signature); }
 .jbadge.is-here .jbadge__ring, .jbadge:hover .jbadge__ring { opacity: 1; }
 .jbadge:hover { border-color: rgba(159,216,199,.6); }
 .jbadge:focus-visible { outline: 2px solid var(--mint); outline-offset: 4px; }
-.jbadge__ring { display: grid; place-items: center; width: 60%; height: 60%; }
-.jbadge__ring svg, .jcard__mark svg { max-width: 100%; max-height: 100%; height: 100%; width: auto; overflow: visible; }
+.jbadge__ring { display: block; width: 60%; height: 60%; }
+/* The svg fills its box exactly; the viewBox (cropped to each logo's outline) centres the logo inside it. */
+.jbadge__ring svg, .jcard__mark svg { display: block; width: 100%; height: 100%; overflow: visible; }
 .jmark { fill: var(--mint); }
 .jmark__flame { fill: var(--coral); }
 .jmark path { transform-box: fill-box; }
@@ -868,7 +869,7 @@ html.is-intro { overflow: hidden; }
 .jmap:not(.is-seen) .jmark--biocon .jmark__body { clip-path: inset(100% 0 0 0); }
 
 .jcard__head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 16px; }
-.jcard__mark { width: 56px; height: 56px; display: grid; place-items: center; padding: 11px; border: 1px solid rgba(159,216,199,.28); border-radius: 50%; }
+.jcard__mark { width: 56px; height: 56px; display: block; padding: 11px; border: 1px solid rgba(159,216,199,.28); border-radius: 50%; }
 .jcard__org { margin: 0; font-family: var(--serif); font-size: clamp(26px, 2.2vw, 34px); line-height: 1; }
 .jcard__full { margin: 6px 0 0; color: rgba(251,249,243,.55); font-size: 12px; line-height: 1.4; }
 .jcard__index { color: var(--mint); font-family: var(--serif); font-size: 34px; line-height: 1; }
@@ -941,7 +942,6 @@ html.is-intro { overflow: hidden; }
   .journey__scrolly { display: block; padding: 0 clamp(16px, 6vw, 60px) 90px; }
   .journey__sticky { position: relative; height: auto; display: block; padding: 0 0 30px; }
   .jmap { width: 100%; max-width: 560px; height: auto; margin: 0 auto; }
-  .jbadge { width: clamp(46px, 13vw, 70px); }
   .jindex { display: none; }
   .jcards { gap: 56px; }
   .jcard { height: auto; }
@@ -952,3 +952,16 @@ html.is-intro { overflow: hidden; }
 @media (max-height: 760px) and (min-width: 961px) { .jmap { height: 44svh; } .jindex button { padding: 7px 4px; } .jindex small { display: none; } }
 @media (prefers-reduced-motion: reduce) { .jcard__inner > * { transition: none !important; } }
 
+
+/* A place on the map: the emblem centred on the city, its label a fixed gap away. The gap is measured from
+   the emblem's enlarged (current) size plus its glow ring, so the label never touches it at any screen size. */
+.jplace { --b: clamp(46px, 3.8vw, 58px); position: absolute; width: 0; height: 0; z-index: 1; }
+.jplace.is-here { z-index: 2; }
+.jplace__label { position: absolute; display: grid; gap: 3px; white-space: nowrap; pointer-events: none; }
+.jplace__label b { font-family: var(--serif); font-size: 17px; font-weight: 400; line-height: 1; color: rgba(251,249,243,.7); transition: color .4s var(--ease-signature); }
+.jplace__label small { font-size: 8.5px; letter-spacing: .16em; text-transform: uppercase; color: rgba(251,249,243,.4); }
+.jplace.is-here .jplace__label b { color: var(--white); }
+.jplace__label--right { left: calc(var(--b) * .66 + 16px); top: 0; transform: translateY(-50%); }
+.jplace__label--below { left: 0; top: calc(var(--b) * .66 + 12px); transform: translateX(-50%); justify-items: center; text-align: center; }
+.jplace__label--above { left: 0; bottom: calc(var(--b) * .66 + 12px); transform: translateX(-50%); justify-items: center; text-align: center; }
+@media (max-width: 960px) { .jplace { --b: clamp(38px, 11vw, 58px); } .jplace__label b { font-size: 15px; } }
