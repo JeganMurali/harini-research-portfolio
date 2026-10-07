@@ -274,7 +274,10 @@ function useLazyScene() {
   const [inView, setInView] = useState(false)
 
   useEffect(() => {
-    const observer = new IntersectionObserver(([entry]) => {
+    // Read the latest record: when a jump (e.g. a shared #link) happens before the first delivery, the
+    // browser batches 'not visible' then 'visible' in one call, and the first record is stale.
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1]
       setInView(entry.isIntersecting)
       if (entry.isIntersecting) setMounted(true)
     }, { rootMargin: '450px 0px' })
@@ -489,7 +492,8 @@ function ChemotaxisField({ active, onSelect }) {
 
     requestAnimationFrame(step)
 
-    const observer = new IntersectionObserver(([entry]) => {
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1]
       if (entry.isIntersecting && !running) { running = true; requestAnimationFrame(step) }
       if (!entry.isIntersecting) running = false
     })

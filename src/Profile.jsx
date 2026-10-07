@@ -77,7 +77,8 @@ export default function Profile() {
       w0 = r.width; h0 = r.height; clearTimeout(t); t = setTimeout(build, 150)
     })
     ro.observe(el)
-    const io = new IntersectionObserver(([e]) => (e.isIntersecting && !document.hidden ? a.play() : a.pause()), { rootMargin: '120px 0px' })
+    // Latest record wins (a deep-link jump can batch a stale 'not visible' first).
+    const io = new IntersectionObserver((entries) => { const e = entries[entries.length - 1]; e.isIntersecting && !document.hidden ? a.play() : a.pause() }, { rootMargin: '120px 0px' })
     io.observe(el)
     const onScroll = still ? () => a.redraw() : null
     if (onScroll) addEventListener('scroll', onScroll, { passive: true })

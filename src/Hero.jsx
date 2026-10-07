@@ -47,7 +47,8 @@ function CellField() {
       })
       frame = reduceMotion || !active ? 0 : requestAnimationFrame(draw)
     }
-    const observer = new IntersectionObserver(([entry]) => {
+    const observer = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1]
       active = entry.isIntersecting && !document.hidden
       if (!active && frame) { cancelAnimationFrame(frame); frame = 0 }
       if (active && !frame) draw()
@@ -150,7 +151,10 @@ export default function Hero({ go, origin, onReviewer }) {
     { const sz = size(); setHint(h => ({ ...h, ...hintAt(spotFor(sz), sz.width) })) }
     if (still) { settle(s); s.redraw() }
 
-    const io = new IntersectionObserver(([entry]) => {
+    // Read the latest record: when a jump (e.g. a shared #link) happens before the first delivery, the
+    // browser batches 'not visible' then 'visible' in one call, and the first record is stale.
+    const io = new IntersectionObserver((entries) => {
+      const entry = entries[entries.length - 1]
       const on = entry.isIntersecting && !document.hidden
       if (on) { s.play(); nameField.current?.play() } else { s.pause(); nameField.current?.pause() }
     })
