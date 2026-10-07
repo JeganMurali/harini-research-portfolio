@@ -620,9 +620,11 @@ html.is-intro { overflow: hidden; }
   .profile__identity { grid-template-columns: 1fr; margin: 56px 0 0 34px; gap: 34px; }
   .profile__stage { height: auto; display: grid; gap: 54px; padding: 40px 0 120px; }
   .profile__now, .profile__next, .profile__range, .profile__readout { position: relative; left: auto; right: auto; top: auto; bottom: auto; width: auto; max-width: none; }
-  .profile__specimens { display: grid; grid-template-columns: 1fr 1fr; gap: 70px 10px; padding: 10px 0 40px; }
-  .specimen { --r: clamp(56px, 18vw, 76px); position: relative; left: auto; top: auto; margin: 0 auto 30px; }
-  .specimen__label { width: 150px; white-space: normal; font-size: 17px; top: calc(100% + 18px); }
+  /* Phones: one column, each label beside its cell, so the strand runs down the left side with nothing in its way. */
+  .profile__specimens { display: grid; grid-template-columns: 1fr; gap: 34px; padding: 10px 0 40px 6px; }
+  .specimen { --r: clamp(48px, 15vw, 62px); position: relative; left: auto; top: auto; margin: 0; }
+  .specimen__label, .specimen.is-active .specimen__label { left: calc(100% + 22px); top: 50%; width: max-content; max-width: calc(100vw - var(--r) * 2 - 110px); white-space: normal; justify-items: start; text-align: left; font-size: 19px; transform: translateY(-50%); }
+  .specimen.is-active .specimen__label { transform: translateY(-50%) translateX(6px); }
 }
 @media (prefers-reduced-motion: reduce) { .pf { opacity: 1; transform: none; clip-path: none !important; transition: none; } .readout__body { animation: none; } }
 /* Seams: every dark section meets its neighbour in the same deep tone, so hero → profile → journey flow. */

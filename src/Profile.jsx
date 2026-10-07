@@ -47,9 +47,12 @@ export default function Profile() {
       const A = {
         head: anchor('head'), eyebrow: anchor('eyebrow'), lead: anchor('lead'), bio: anchor('bio'), chem: anchor('chem'), iiser: anchor('iiser'),
         now: anchor('now'), next: anchor('next'), stage: anchor('stage'), caps: capabilities.map((_, i) => anchor(`cap-${i}`)),
+        // Cell labels are obstacles too: strands route around the text, never through it.
+        labels: capabilities.map((_, i) => { const n = el.querySelector(`.specimen--${i} .specimen__label`), s = el.getBoundingClientRect(), r = n.getBoundingClientRect(); return { x: r.left - s.left, y: r.top - s.top, w: r.width, h: r.height } }),
       }
       el.classList.remove('is-measuring')
       network.current = buildNetwork(A, { width, mobile: width < 780 })
+      if (import.meta.env.DEV) window.__network = network.current   // dev-only: lets browser tests inspect the geometry
       a.setNetwork(network.current)
       a.state.specimens.forEach((sp, i) => { sp.act = i === activeRef.current ? 1 : 0 })
       // Reveal schedule on the growth clock.

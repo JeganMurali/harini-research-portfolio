@@ -100,28 +100,76 @@ export function buildNetwork(A, { width, mobile }) {
   const nowR = mobile ? [A.now.x + 20, A.now.y + A.now.h + 10] : [A.now.x + A.now.w + 18, A.now.y + A.now.h / 2]
   const specimens = A.caps.map((c) => ({ x: c.x + c.w / 2, y: c.y + c.h / 2, r: c.w / 2 }))
   const capTimes = []
-  specimens.forEach((sp, i) => {
-    const toward = Math.atan2(nowR[1] - sp.y, nowR[0] - sp.x)
-    const rimPt = [sp.x + Math.cos(toward) * (sp.r + 6), sp.y + Math.sin(toward) * (sp.r + 6)]
-    const dist = Math.hypot(rimPt[0] - nowR[0], rimPt[1] - nowR[1])
-    const t0 = 2.05 + i * .32, t1 = t0 + .55 + dist / 2400
-    capTimes.push(t1)
-    sp.birth = t1 - .05
-    // One smooth cubic arc: it leaves "Now" level (vertical on phones) and arrives square to the cell's rim.
-    const c1 = mobile ? [nowR[0], nowR[1] + dist * .4] : [nowR[0] + dist * .42, nowR[1]]
-    const c2 = [rimPt[0] + Math.cos(toward) * dist * .38, rimPt[1] + Math.sin(toward) * dist * .38]
+  // The network grows like sprouting cells: "Now" feeds the two nearest cells, and each of those sprouts the
+  // cell beside it — so no strand has to travel across the stage (where it would cut through a cell).
+  const near = specimens.map((sp, i) => i).sort((a, b) => Math.hypot(specimens[a].x - nowR[0], specimens[a].y - nowR[1]) - Math.hypot(specimens[b].x - nowR[0], specimens[b].y - nowR[1]))
+  const roots = near.slice(0, mobile ? 1 : 2)                 // phones: one column, so one root and a chain
+  const parentOf = specimens.map(() => -1)
+  near.forEach((i, k) => {
+    if (k < roots.length) return
+    // Sprout from the nearest cell that already exists.
+    parentOf[i] = near.slice(0, k).reduce((best, j) => (Math.hypot(specimens[j].x - specimens[i].x, specimens[j].y - specimens[i].y) < Math.hypot(specimens[best].x - specimens[i].x, specimens[best].y - specimens[i].y) ? j : best))
+  })
+  const unit = (v) => { const L = Math.hypot(v[0], v[1]) || 1; return [v[0] / L, v[1] / L] }
+  const cubic = (p0, c1, c2, p3) => {
     const pts = []
     for (let k = 0; k <= 40; k++) {
       const t = k / 40, u = 1 - t
-      pts.push([u * u * u * nowR[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * rimPt[0], u * u * u * nowR[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * rimPt[1]])
+      pts.push([u * u * u * p0[0] + 3 * u * u * t * c1[0] + 3 * u * t * t * c2[0] + t * t * t * p3[0], u * u * u * p0[1] + 3 * u * u * t * c1[1] + 3 * u * t * t * c2[1] + t * t * t * p3[1]])
     }
+    return pts
+  }
+  // A strand must keep clear of every cell except the ones it connects (cells grow ~15% when active).
+  const labels = A.labels || []
+  const clear = (pts, skip) => specimens.every((o, j) => skip.includes(j) || pts.every(([x, y]) => Math.hypot(x - o.x, y - o.y) > o.r * 1.18 + 10))
+    // …and of every cell label (padded; the active cell's label drops 10px).
+    && labels.every((lb) => pts.every(([x, y]) => !(x > lb.x - 10 && x < lb.x + lb.w + 10 && y > lb.y - 10 && y < lb.y + lb.h + 20)))
+  // From a point to a cell's rim: try a gentle arc first, then bend further either way until the path is clear.
+  const route = (from, leave, i, skip) => {
+    const sp = specimens[i]
+    let best = null
+    for (const bow of [0, 40, -40, 80, -80, 130, -130, 190, -190]) {
+      const d = unit([sp.x - from[0], sp.y - from[1]]), n = [-d[1], d[0]]
+      const L = Math.hypot(sp.x - from[0], sp.y - from[1])
+      const c1 = [from[0] + leave[0] * L * .4 + n[0] * bow, from[1] + leave[1] * L * .4 + n[1] * bow]
+      // Arrive square to the rim, coming from the second control point's side.
+      const arrive = unit([sp.x - (c1[0] + n[0] * bow * .3), sp.y - (c1[1] + n[1] * bow * .3)])
+      const rim = [sp.x - arrive[0] * (sp.r + 6), sp.y - arrive[1] * (sp.r + 6)]
+      const c2 = [rim[0] - arrive[0] * L * .35 + n[0] * bow * .5, rim[1] - arrive[1] * L * .35 + n[1] * bow * .5]
+      const pts = cubic(from, c1, c2, rim)
+      if (!best) best = pts
+      if (clear(pts, skip)) return pts
+    }
+    return best
+  }
+  const order = near
+  const born = []
+  order.forEach((i, n) => {
+    const sp = specimens[i], parent = parentOf[i]
+    let from, leave, t0
+    if (parent < 0) {
+      from = nowR
+      leave = mobile ? [0, 1] : [1, 0]                          // leaves "Now" level (downward on phones)
+      t0 = 2.05 + n * .32
+    } else {
+      const ps = specimens[parent], d = unit([sp.x - ps.x, sp.y - ps.y])
+      from = [ps.x + d[0] * (ps.r + 6), ps.y + d[1] * (ps.r + 6)]  // sprouts from the parent's rim, facing the child
+      leave = d
+      t0 = born[parent] + .08
+    }
+    const pts = route(from, leave, i, parent < 0 ? [i] : [i, parent])
+    let L = 0; for (let k = 1; k < pts.length; k++) L += Math.hypot(pts[k][0] - pts[k - 1][0], pts[k][1] - pts[k - 1][1])
+    const t1 = Math.min(3.9, t0 + .5 + L / 2400)
+    capTimes[i] = t1
+    born[i] = sp.birth = t1 - .05
     const pth = path(pts, t0, t1, 1.7, KIND.stress, 1, i)
     path(pts.map(([x, y], k) => [x + Math.sin(k * .5) * 2.4, y + Math.cos(k * .5) * 2.4]), t0 + .03, t1 + .03, .8, KIND.stress, .7, i)
-    // Sparse 70° side branches — actin character without the noise of a full mesh.
+    // Sparse 70° side branches — actin character without the noise of a full mesh — never poking into a cell.
     for (let k = 0; k < 3; k++) {
       const f = .25 + k * .22, pa = pth.at(f - .01), pb = pth.at(f)
       const ang = Math.atan2(pb[1] - pa[1], pb[0] - pa[0]) + (k % 2 ? 70 : -70) * RAD
-      twig(pb, ang, 18 + R() * 22, t0 + (t1 - t0) * f, KIND.network, .8, .7)
+      const len = 18 + R() * 22, tip = [pb[0] + Math.cos(ang) * len, pb[1] + Math.sin(ang) * len]
+      if (clear([tip, [(pb[0] + tip[0]) / 2, (pb[1] + tip[1]) / 2]], [])) twig(pb, ang, len, t0 + (t1 - t0) * f, KIND.network, .8, .7)
     }
   })
 
