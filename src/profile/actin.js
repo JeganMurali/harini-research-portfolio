@@ -264,8 +264,11 @@ void main(){
 
 // Background: the hero's world continued — same gradient and out-of-focus neighbouring cells — plus the four
 // specimen cells, drawn in the hero cell's schematic style, each telling one capability through what it does.
-const BG_FRAG = (deriv) => `${deriv ? '#extension GL_OES_standard_derivatives : enable\n' : ''}
+// Two passes from one source: SOFT renders the smooth, defocused layers (gradient, far cells, core glow) at half
+// resolution; MAIN samples them and draws the four specimen cells, vignette and dither at full resolution.
+const BG_FRAG = (deriv, pass) => `${deriv ? '#extension GL_OES_standard_derivatives : enable\n' : ''}#define ${pass}
 precision highp float;
+uniform sampler2D uBg;
 uniform vec2 uView, uCore, uMouse; uniform float uOffsetY, uTime, uDpr, uWorld;
 uniform vec4 uSpecA[4], uSpecB[4];
 const vec3 TEAL = vec3(.027, .145, .157), DEEP = vec3(.008, .051, .059), MINT = vec3(.498, .827, .757), MINT2 = vec3(.624, .847, .780), CYAN = vec3(.384, .788, .816), CORAL = vec3(.937, .553, .447);
@@ -381,6 +384,7 @@ vec3 specimen(vec3 col, vec2 p, vec4 A, vec4 B){
   return col;
 }
 
+#ifdef SOFT
 void main(){
   vec2 p = vec2(gl_FragCoord.x, uView.y * uDpr - gl_FragCoord.y) / uDpr;
   vec2 sp = p - vec2(0., uOffsetY);
@@ -388,12 +392,21 @@ void main(){
   vec3 col = mix(TEAL * .85, DEEP, clamp(length(p - core) / (max(uView.x, uView.y) * .75), 0., 1.));
   col += farLayer(sp * .9 + uMouse * 7. + vec2(0., uOffsetY * .18)) * .85;
   col += CYAN * .05 * exp(-pow(length(p - core) / 380., 2.)) * uWorld;
+  gl_FragColor = vec4(col, 1.);
+}
+#else
+void main(){
+  vec2 p = vec2(gl_FragCoord.x, uView.y * uDpr - gl_FragCoord.y) / uDpr;
+  vec2 sp = p - vec2(0., uOffsetY);
+  vec3 col = texture2D(uBg, gl_FragCoord.xy / (uView * uDpr)).rgb;
   for (int i = 0; i < 4; i++) col = specimen(col, sp, uSpecA[i], uSpecB[i]);
   vec2 v = p / uView - .5;
   col *= 1. - .3 * smoothstep(.4, .9, length(v * vec2(1., .9)));
   col += (hash(p + fract(uTime * 7.)) + hash(p.yx + 3.1 + fract(uTime * 3.)) - 1.) * 1.5 / 255.;
   gl_FragColor = vec4(col, 1.);
-}`
+}
+#endif
+`
 const BG_VERT = `attribute vec2 aPos; void main(){ gl_Position = vec4(aPos, 0., 1.); }`
 
 function compile(gl, type, src) {
@@ -412,10 +425,27 @@ function program(gl, vs, fs, attribs) {
 }
 
 export function createActin(canvas, { still = false } = {}) {
-  const gl = canvas.getContext('webgl', { antialias: true, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' })
+  // No MSAA: every line, grain and cell edge is anti-aliased in its shader, so 4× samples only cost bandwidth.
+  const gl = canvas.getContext('webgl', { antialias: false, alpha: false, premultipliedAlpha: false, powerPreference: 'high-performance' })
   if (!gl) return null
   const deriv = !!gl.getExtension('OES_standard_derivatives')
-  const bg = program(gl, BG_VERT, BG_FRAG(deriv), ['aPos'])
+  const soft = program(gl, BG_VERT, BG_FRAG(deriv, 'SOFT'), ['aPos'])
+  const bg = program(gl, BG_VERT, BG_FRAG(deriv, 'MAIN'), ['aPos'])
+  // Half-resolution target for the soft layers; half-float where supported so dark gradients can't band.
+  const half = gl.getExtension('OES_texture_half_float'), halfLinear = gl.getExtension('OES_texture_half_float_linear'), halfTarget = gl.getExtension('EXT_color_buffer_half_float')
+  const texType = half && halfLinear && halfTarget ? half.HALF_FLOAT_OES : gl.UNSIGNED_BYTE
+  const softTex = gl.createTexture(), fbo = gl.createFramebuffer()
+  let softW = 1, softH = 1
+  function sizeTarget() {
+    softW = Math.max(1, Math.ceil(canvas.width / 2)); softH = Math.max(1, Math.ceil(canvas.height / 2))
+    gl.bindTexture(gl.TEXTURE_2D, softTex)
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, softW, softH, 0, gl.RGBA, texType, null)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+    gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, softTex, 0)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+  }
   const seg = program(gl, SEG_VERT, SEG_FRAG, ['aSeg', 'aInfo', 'aVert'])
   const pts = program(gl, PT_VERT, PT_FRAG, ['aP', 'aQ'])
   const quad = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, quad); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 3, -1, -1, 3]), gl.STATIC_DRAW)
@@ -455,23 +485,35 @@ export function createActin(canvas, { still = false } = {}) {
     dpr = Math.min(devicePixelRatio || 1, 2)
     const r = canvas.getBoundingClientRect()
     canvas.width = Math.max(1, Math.round(r.width * dpr)); canvas.height = Math.max(1, Math.round(r.height * dpr))
+    sizeTarget()
     if (still) render(performance.now())
   }
 
   function render(now) {
-    const t = (now - start) / 1000
+    // fixedTime: test hook — freezes motion so two renders can be compared pixel for pixel.
+    const t = state.fixedTime ?? (now - start) / 1000
     state.mouse.x += (target.x - state.mouse.x) * .07; state.mouse.y += (target.y - state.mouse.y) * .07
     offsetY = measure()
     const W = canvas.width / dpr, H = canvas.height / dpr
-    gl.viewport(0, 0, canvas.width, canvas.height)
     gl.disable(gl.BLEND)
-
-    gl.useProgram(bg.p)
     gl.bindBuffer(gl.ARRAY_BUFFER, quad)
     for (let i = 0; i < 3; i++) gl.disableVertexAttribArray(i)
     gl.enableVertexAttribArray(0); gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0)
-    gl.uniform2f(bg.u.uView, W, H); gl.uniform2f(bg.u.uCore, state.core.x, state.core.y); gl.uniform2f(bg.u.uMouse, state.mouse.x, state.mouse.y)
-    gl.uniform1f(bg.u.uOffsetY, offsetY); gl.uniform1f(bg.u.uTime, t); gl.uniform1f(bg.u.uDpr, dpr); gl.uniform1f(bg.u.uWorld, state.world)
+    const common = (u, pdpr) => {
+      gl.uniform2f(u.uView, W, H); gl.uniform2f(u.uCore, state.core.x, state.core.y); gl.uniform2f(u.uMouse, state.mouse.x, state.mouse.y)
+      gl.uniform1f(u.uOffsetY, offsetY); gl.uniform1f(u.uTime, t); gl.uniform1f(u.uDpr, pdpr); gl.uniform1f(u.uWorld, state.world)
+    }
+    // Pass 1 — soft layers into the half-resolution target (texture unbound first: no feedback loop).
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, null)
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fbo)
+    gl.viewport(0, 0, softW, softH)
+    gl.useProgram(soft.p); common(soft.u, dpr * softW / canvas.width)
+    gl.drawArrays(gl.TRIANGLES, 0, 3)
+    // Pass 2 — full resolution: soft layers upsampled, specimen cells on top.
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null)
+    gl.viewport(0, 0, canvas.width, canvas.height)
+    gl.useProgram(bg.p); common(bg.u, dpr)
+    gl.bindTexture(gl.TEXTURE_2D, softTex); gl.uniform1i(bg.u.uBg, 0)
     state.specimens.forEach((sp, i) => {
       // A cell forms (ease-out) the moment its strand arrives.
       const k = Math.min(1, Math.max(0, (state.grow - sp.birth) / .45)), born = 1 - (1 - k) ** 3
@@ -505,8 +547,14 @@ export function createActin(canvas, { still = false } = {}) {
     }
   }
 
+  // The canvas is sticky while its content moves with the scroll, so it must redraw every display frame while
+  // the page moves (120 Hz panels included) or the cells visibly trail the text. At rest, 60 fps is plenty.
+  let lastMotion = 0
+  const onScroll = () => { lastMotion = performance.now() }
+  addEventListener('scroll', onScroll, { passive: true })
   function loop(now) {
-    if (now - last >= 1000 / 60 - 2) { render(now); last = now }
+    const moving = now - lastMotion < 400 || state.grow < 5
+    if (moving || now - last >= 1000 / 60 - 2) { render(now); last = now }
     frame = running ? requestAnimationFrame(loop) : 0
   }
 
@@ -514,11 +562,11 @@ export function createActin(canvas, { still = false } = {}) {
   return {
     state, setNetwork,
     setMeasure(fn) { measure = fn },
-    pointer(nx, ny) { target.x = nx; target.y = ny },
+    pointer(nx, ny) { target.x = nx; target.y = ny; lastMotion = performance.now() },
     time() { return (performance.now() - start) / 1000 },
     redraw() { render(performance.now()) },
     play() { if (still || running) return; running = true; frame = requestAnimationFrame(loop) },
     pause() { running = false; cancelAnimationFrame(frame); frame = 0 },
-    destroy() { running = false; ro.disconnect(); cancelAnimationFrame(frame) },
+    destroy() { running = false; ro.disconnect(); removeEventListener('scroll', onScroll); cancelAnimationFrame(frame) },
   }
 }
